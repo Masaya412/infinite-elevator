@@ -50,3 +50,8 @@ GitHubのリポジトリで:
 
 この版では Web Audio API を使って外部音源ファイルなしで効果音を生成します。
 通常クリック、ゲーム開始、エレベーター扉、上昇演出4段階、到着、アイテム、購入・売却、採掘、宝石、ブラックジャック、スロット、ジャックポット、ワープ、究極ルーレット、地獄、成功・失敗、ゲームオーバー等に個別の効果音を割り当てています。右上のスピーカーボタンで効果音をON/OFFできます。
+
+## v7 changes
+- Inventory cards now use high-contrast text and icons at all times.
+- Blackjack HIT results show the drawn card and final hand total; bust explicitly shows that the total exceeded 21.
+- Magic Forge can be used only once per visit. After one upgrade, the room shows that upgrading is complete.
