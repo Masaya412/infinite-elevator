@@ -80,7 +80,7 @@ function playSfx(name:SfxName, enabled=true){
   }catch{}
 }
 
-type BgmMood = 'tier1'|'tier2'|'tier3'|'tier4'|'tier5'|'casino'|'blackjack'|'hell'|'mystic';
+type BgmMood = 'tier1'|'tier2'|'tier3'|'tier4'|'tier5'|'god'|'casino'|'blackjack'|'hell'|'mystic';
 let bgmTimer:number|null=null;
 let bgmMood:BgmMood|null=null;
 let bgmStep=0;
@@ -102,7 +102,8 @@ function startBgm(mood:BgmMood, enabled=true){
       tier2:{notes:[587,698,880,784,698,587,523,587],bass:[147,196,220,196],ms:280,type:'triangle'},
       tier3:{notes:[659,784,988,880,784,1047,988,784],bass:[165,220,247,220],ms:250,type:'square'},
       tier4:{notes:[698,831,1047,1245,1047,831,1397,1047],bass:[175,208,262,208],ms:220,type:'sawtooth'},
-      tier5:{notes:[784,988,1175,1568,1319,1175,988,1568],bass:[196,247,294,247],ms:205,type:'triangle'},
+      tier5:{notes:[784,988,1175,1568,1760,1568,1319,1976,1568,1175,988,1319],bass:[196,247,294,392],ms:185,type:'triangle'},
+      god:{notes:[523,659,784,1047,1319,1568,2093,1568,1319,1047,784,988,1175,1568,1976,2349],bass:[131,196,262,392],ms:240,type:'sine'},
       casino:{notes:[659,784,988,784,1047,988,784,659],bass:[165,165,196,220],ms:185,type:'square'},
       blackjack:{notes:[392,466,523,587,523,466,440,392],bass:[98,117,131,117],ms:340,type:'triangle'},
       hell:{notes:[110,117,104,98,110,92,87,98],bass:[55,49,46,41],ms:390,type:'sawtooth'},
@@ -112,7 +113,8 @@ function startBgm(mood:BgmMood, enabled=true){
     const tick=()=>{
       if(!audioContext||bgmMood!==mood)return; const now=audioContext.currentTime;
       const o=audioContext.createOscillator(),g=audioContext.createGain(); o.type=pat.type; o.frequency.value=pat.notes[bgmStep%pat.notes.length];
-      g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(mood==='hell'?.012:.018,now+.015);g.gain.exponentialRampToValueAtTime(.0001,now+.15);o.connect(g);g.connect(audioContext.destination);o.start(now);o.stop(now+.17);
+      g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(mood==='hell'?.012:mood==='god'?.026:mood==='tier5'?.023:.018,now+.015);g.gain.exponentialRampToValueAtTime(.0001,now+.15);o.connect(g);g.connect(audioContext.destination);o.start(now);o.stop(now+.17);
+      if((mood==='god'||mood==='tier5') && bgmStep%4===0){[2,3].forEach((mul,idx)=>{const h=audioContext!.createOscillator(),hg=audioContext!.createGain();h.type='sine';h.frequency.value=pat.notes[bgmStep%pat.notes.length]*mul;hg.gain.setValueAtTime(.0001,now);hg.gain.exponentialRampToValueAtTime(mood==='god'?.008:.005,now+.02);hg.gain.exponentialRampToValueAtTime(.0001,now+.28);h.connect(hg);hg.connect(audioContext!.destination);h.start(now+.02*idx);h.stop(now+.3);});}
       if(bgmStep%2===0){const b=audioContext.createOscillator(),bg=audioContext.createGain();b.type='triangle';b.frequency.value=pat.bass[Math.floor(bgmStep/2)%pat.bass.length];bg.gain.setValueAtTime(.0001,now);bg.gain.exponentialRampToValueAtTime(.014,now+.01);bg.gain.exponentialRampToValueAtTime(.0001,now+.24);b.connect(bg);bg.connect(audioContext.destination);b.start(now);b.stop(now+.26);}
       bgmStep++;
     };
@@ -180,6 +182,7 @@ export default function InfiniteElevator(){
   const [slotBet,setSlotBet]=useState(20); const [slot,setSlot]=useState(['❔','❔','❔']); const [slotSpinning,setSlotSpinning]=useState(false);
   const [slotWin,setSlotWin]=useState(false); const [slotMessage,setSlotMessage]=useState('');
   const [casinoSpinsLeft,setCasinoSpinsLeft]=useState(10);
+  const [rareArrival,setRareArrival]=useState(0);
   const [doorChoices,setDoorChoices]=useState<DoorChoice[]>([]);
   const [gameSpeed,setGameSpeed]=useState<1|2>(1);
   const fastTimeout=(fn:()=>void,ms:number)=>window.setTimeout(fn,ms/gameSpeed);
@@ -212,7 +215,8 @@ export default function InfiniteElevator(){
     if(s.inHell||room.kind==='hell')mood='hell';
     else if(room.kind==='casino')mood='casino';
     else if(room.kind==='blackjack')mood='blackjack';
-    else if(['fortune','altar','ultimate','god','warp'].includes(room.kind||''))mood='mystic';
+    else if(room.kind==='god')mood='god';
+    else if(['fortune','altar','ultimate','warp'].includes(room.kind||''))mood='mystic';
     startBgm(mood,soundOn);
     return ()=>{};
   },[room.tier,room.kind,room.title,s.inHell,soundOn,menu,gameover]);
@@ -236,7 +240,7 @@ export default function InfiniteElevator(){
     setS(x=>{const items=[...x.items];const removed=items[discardIndex];items[discardIndex]=incoming;return {...x,items,logs:[`「${removed.name}」を捨てて「${incoming.name}」を入手`,...x.logs]};});
     playSfx('item',soundOn);setPendingOverflow(null);
   };
-  const show=(r:Room)=>setRoom(r);
+  const show=(r:Room)=>{setRoom(r);if(r.tier>=4){setRareArrival(r.tier);fastTimeout(()=>setRareArrival(0),r.tier===5?1800:1100);}};
 
   const start=()=>{playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
   const end=()=>{playSfx('gameover',soundOn);setGameover(true); setS(x=>{const h=Math.max(x.highScore,x.floor); localStorage.setItem('infinite_elevator_highscore',String(h)); return {...x,highScore:h};});};
@@ -283,10 +287,10 @@ export default function InfiniteElevator(){
       else if(t==='EMERALD_MINING')setupMining(tier,'emerald');
       else if(t==='STAIRS_LONG'){const g=ri(50,200);patch({floor:s.floor+g});show({tier,title:'果てしなく続く階段',desc:'次元を超える階段！',result:`+${g}階上へ`,resultType:'gold'});}
       else if(t==='SHOP_LARGE')setupShop(tier,5); else {setItemBoxOpening(false);show({tier,title:'不思議なアイテム箱',desc:'豪華な箱が置いてある。中には特別なアイテムが入っていそうだ。',result:'箱を開けてみよう',kind:'itembox'});}
-    } else if(tier===4){const t=type||pick(['WARP','AUCTION','DIAMOND_MINING','TIMECAPSULE']);
+    } else if(tier===4){const t=type||pick(['WARP','AUCTION','DIAMOND_MINING']);
       if(t==='WARP')show({tier,title:'ワープホール',desc:'使うとランダムに移動できる。',result:'ワープホール現る',kind:'warp'});
       else if(t==='AUCTION')show({tier,title:'神々の競売場',desc:'最高峰の品がオークションに出品。',result:'競売開催中',kind:'auction'});
-      else if(t==='DIAMOND_MINING')setupMining(tier,'diamond'); else {const b=s.floor*4;patch({money:s.money+b});show({tier,title:'タイムカプセル',desc:'過去の記憶が還元される。',result:`階数ボーナス +${b}円`,resultType:'gold'});}
+      else if(t==='DIAMOND_MINING')setupMining(tier,'diamond');
     } else {if((type||pick(['ULTIMATE_ROULETTE','GOD']))==='ULTIMATE_ROULETTE'){setUltimateMessage('???');setUltimateSpinning(false);show({tier,title:'究極のルーレット',desc:'神々の気まぐれ。究極ルーレットに挑むか？',result:'運命のルーレット',kind:'ultimate'});} else show({tier,title:'神の故郷',desc:'好きなアイテムを一つ選べます。',result:'神の加護',kind:'god'});}
   };
 
@@ -402,17 +406,18 @@ export default function InfiniteElevator(){
         <Text fontSize="sm" color={casinoSpinsLeft>0?'yellow.300':'red.300'} fontWeight="900">残り {casinoSpinsLeft} / 10 回</Text>
       </Flex>
       <HStack justify="center"><Button size="xs" isDisabled={slotSpinning||casinoSpinsLeft<=0} onClick={()=>setSlotBet(Math.max(20,slotBet-20))}>-</Button><Text color="yellow.300" fontWeight="900">{slotBet}円</Text><Button size="xs" isDisabled={slotSpinning||casinoSpinsLeft<=0} onClick={()=>setSlotBet(slotBet+20)}>+</Button></HStack>
-      <HStack justify="center" spacing={2}>{slot.map((v,i)=><Center key={i} bg={slotWin?'yellow.900':'black'} border="2px solid" borderColor={slotWin?'yellow.300':slotSpinning?'purple.400':'whiteAlpha.200'} boxShadow={slotWin?'0 0 18px rgba(250,204,21,.85)':'inset 0 0 12px rgba(0,0,0,.7)'} animation={slotWin?'slotJackpot .42s ease-in-out infinite alternate':undefined} rounded="lg" w="62px" h="62px" fontSize="2xl">{v}</Center>)}</HStack>
-      {slotMessage&&<Box px={3} py={2} rounded="lg" bg={slotWin?'yellow.900':'whiteAlpha.100'} border="1px solid" borderColor={slotWin?'yellow.300':'whiteAlpha.200'} animation={slotWin?'winText .5s ease-in-out infinite alternate':undefined}><Text textAlign="center" fontSize={slotWin?'sm':'xs'} fontWeight="900" color={slotWin?'yellow.200':'gray.100'}>{slotMessage}</Text></Box>}
+      <HStack justify="center" spacing={2}>{slot.map((v,i)=><Center key={i} bg={slotWin?'yellow.900':'black'} border="2px solid" borderColor={slotWin?'yellow.300':slotSpinning?'purple.400':'whiteAlpha.200'} boxShadow={slotWin?'0 0 18px rgba(250,204,21,.85)':'inset 0 0 12px rgba(0,0,0,.7)'} animation={slotWin?'slotJackpot .42s ease-in-out infinite alternate':slotMessage.includes('リーチ')?'reachPulse .3s ease-in-out infinite alternate':undefined} rounded="lg" w="62px" h="62px" fontSize="2xl">{v}</Center>)}</HStack>
+      {slotMessage&&<Box px={3} py={2} rounded="lg" bg={slotWin?'yellow.900':slotMessage.includes('リーチ')?'red.900':'whiteAlpha.100'} border="1px solid" borderColor={slotWin?'yellow.300':slotMessage.includes('リーチ')?'orange.300':'whiteAlpha.200'} animation={slotWin?'winText .5s ease-in-out infinite alternate':undefined}><Text textAlign="center" fontSize={slotWin?'sm':'xs'} fontWeight="900" color={slotWin?'yellow.200':slotMessage.includes('リーチ')?'orange.100':'gray.100'}>{slotMessage}</Text></Box>}
       <Button colorScheme="purple" size="sm" isLoading={slotSpinning} loadingText="リール回転中…" onClick={()=>{
         if(casinoSpinsLeft<=0){playSfx('fail',soundOn);setSlotMessage('このカジノでは10回遊び終えました');show({...room,result:'この訪問での上限10回に到達',resultType:'neutral'});return;}
         if(s.money<slotBet||slotSpinning){playSfx('fail',soundOn);return;}
         setCasinoSpinsLeft(v=>Math.max(0,v-1));
         const sy=['🔴','🟢','💎','🎡']; const final=[pick(sy),pick(sy),pick(sy)];
         playSfx('casino',soundOn); setS(x=>({...x,money:x.money-slotBet})); setSlotSpinning(true); setSlotWin(false); setSlotMessage('3つのリールが回転中…'); setSlot(['🎰','🎰','🎰']);
-        const timers=final.map((_,i)=>fastInterval(()=>setSlot(cur=>cur.map((v,j)=>j===i?pick(sy):v)),70));
-        const stops=[520,900,1280];
-        stops.forEach((ms,i)=>fastTimeout(()=>{window.clearInterval(timers[i]);setSlot(cur=>cur.map((v,j)=>j===i?final[i]:v));playSfx('slotStop',soundOn);setSlotMessage(i<2?`${i+1}リール停止！ 次のリールへ…`:'3リール停止！ 判定中…');},ms));
+        const timers=final.map((_,i)=>fastInterval(()=>setSlot(cur=>cur.map((v,j)=>j===i?pick(sy):v)),95));
+        const isReach=final[0]===final[1];
+        const stops=[760,1480,isReach?2780:2280];
+        stops.forEach((ms,i)=>fastTimeout(()=>{window.clearInterval(timers[i]);setSlot(cur=>cur.map((v,j)=>j===i?final[i]:v));playSfx('slotStop',soundOn);if(i===0)setSlotMessage('1リール停止… 次は中央！');else if(i===1&&isReach){playSfx('jackpot',soundOn);setSlotMessage(`🔥 リーチ！ ${final[0]} ${final[1]} … 最終リールに注目！ 🔥`);}else if(i===1)setSlotMessage('2リール停止… 最終リールへ！');else setSlotMessage('3リール停止！ 判定中…');},ms));
         fastTimeout(()=>{
           let mult=0; let label='';
           if(final.every(v=>v==='🔴')){mult=5;label='ルビー';}
@@ -422,7 +427,7 @@ export default function InfiniteElevator(){
           if(mult){playSfx('jackpot',soundOn);setSlotWin(true);setSlotMessage(`✨ ${label}が3つ揃った！ ${mult}倍！ ✨`);setS(x=>({...x,money:x.money+slotBet*mult}));show({...room,result:`${label}揃い！ ${mult}倍 / +${slotBet*mult}円`,resultType:'gold'});fastTimeout(()=>setSlotWin(false),2200);}
           else{playSfx('fail',soundOn);setSlotMessage('残念…今回は3つ揃わなかった');show({...room,result:'ハズレ… 次の勝負へ！',resultType:'neutral'});}
           setSlotSpinning(false);
-        },1540);
+        },isReach?3040:2540);
       }} isDisabled={casinoSpinsLeft<=0}>スロットを回す</Button>
       <Box bg="blackAlpha.500" border="1px solid" borderColor="purple.500" rounded="xl" p={2.5}>
         <Text fontSize="11px" fontWeight="900" color="purple.200" mb={1.5} textAlign="center">🎰 配当表</Text>
@@ -468,7 +473,6 @@ export default function InfiniteElevator(){
     if(k==='warp')return {icon:FaWandMagicSparkles,color:'cyan.200',glow:'rgba(34,211,238,.45)'};
     if(k==='doors')return {icon:FaDoorClosed,color:'orange.200',glow:'rgba(251,146,60,.35)'};
     if(t.includes('階段'))return {icon:FaArrowUp,color:'blue.200',glow:'rgba(96,165,250,.35)'};
-    if(t.includes('タイムカプセル'))return {icon:FaGift,color:'purple.200',glow:'rgba(192,132,252,.35)'};
     if(t.includes('何も無い'))return {icon:FaDoorClosed,color:'gray.300',glow:'rgba(148,163,184,.22)'};
     if(t.includes('湯'))return {icon:FaHotTubPerson,color:'cyan.200',glow:'rgba(34,211,238,.35)'};
     if(t.includes('財布')||t.includes('販売'))return {icon:FaSackDollar,color:'yellow.200',glow:'rgba(250,204,21,.35)'};
@@ -477,6 +481,27 @@ export default function InfiniteElevator(){
   },[room]);
 
   const selectedItem=selected===null?null:s.items[selected];
+
+  const roomAtmosphere=useMemo(()=>{
+    const k=room.kind||''; const t=room.title;
+    if(k==='hell'||s.inHell)return {bg:'radial-gradient(circle at 50% 25%, rgba(127,29,29,.75), transparent 38%), linear-gradient(180deg,#300505 0%,#090000 70%,#000 100%)',accent:'rgba(248,113,113,.22)',label:'HELL GATE'};
+    if(k==='god')return {bg:'radial-gradient(circle at 50% 15%, rgba(255,255,255,.72), rgba(250,204,21,.30) 25%, transparent 55%), linear-gradient(180deg,#6b4d13 0%,#2b2208 38%,#090b10 100%)',accent:'rgba(253,224,71,.28)',label:'DIVINE SANCTUARY'};
+    if(k==='ultimate')return {bg:'conic-gradient(from 0deg at 50% 50%,rgba(250,204,21,.22),rgba(168,85,247,.18),rgba(239,68,68,.18),rgba(250,204,21,.22)), radial-gradient(circle,#422006,#090b10 68%)',accent:'rgba(250,204,21,.22)',label:'ULTIMATE CHAMBER'};
+    if(k==='casino')return {bg:'radial-gradient(circle at 20% 15%,rgba(236,72,153,.25),transparent 32%),radial-gradient(circle at 80% 25%,rgba(139,92,246,.30),transparent 34%),linear-gradient(160deg,#180a2c,#080510 70%)',accent:'rgba(192,132,252,.20)',label:'NEON CASINO'};
+    if(k==='blackjack')return {bg:'radial-gradient(circle at center,rgba(13,148,136,.20),transparent 45%),linear-gradient(180deg,#062b25,#06100f 70%,#020505)',accent:'rgba(45,212,191,.16)',label:'UNDERGROUND CARD SALON'};
+    if(k==='mining')return {bg:room.tier===4?'radial-gradient(circle at 50% 35%,rgba(34,211,238,.22),transparent 35%),linear-gradient(145deg,#10242c,#090d11 70%)':room.tier===3?'radial-gradient(circle at 50% 35%,rgba(52,211,153,.18),transparent 35%),linear-gradient(145deg,#10251e,#080d0a 70%)':'radial-gradient(circle at 50% 35%,rgba(248,113,113,.18),transparent 35%),linear-gradient(145deg,#271414,#0d0909 70%)',accent:'rgba(148,163,184,.12)',label:'MINING CAVERN'};
+    if(k==='fortune')return {bg:'radial-gradient(circle at 50% 30%,rgba(192,132,252,.26),transparent 35%),radial-gradient(circle at 15% 15%,rgba(255,255,255,.10),transparent 2%),linear-gradient(180deg,#24103c,#080710 75%)',accent:'rgba(192,132,252,.18)',label:'FORTUNE ROOM'};
+    if(k==='altar')return {bg:'radial-gradient(circle at 50% 30%,rgba(253,224,71,.20),transparent 38%),linear-gradient(180deg,#2d2510,#0b0a06 72%)',accent:'rgba(253,224,71,.14)',label:'ALTAR'};
+    if(k==='warp')return {bg:'radial-gradient(circle at center,rgba(34,211,238,.30),rgba(168,85,247,.15) 32%,transparent 55%),linear-gradient(180deg,#071b2a,#0a0714 75%)',accent:'rgba(34,211,238,.18)',label:'WARP FIELD'};
+    if(k==='shop')return {bg:'radial-gradient(circle at 50% 10%,rgba(250,204,21,.16),transparent 32%),linear-gradient(180deg,#252010,#0d0c08 75%)',accent:'rgba(250,204,21,.10)',label:'SHOP FLOOR'};
+    if(k==='forge')return {bg:'radial-gradient(circle at 50% 60%,rgba(251,146,60,.28),transparent 38%),linear-gradient(180deg,#26130a,#0d0805 75%)',accent:'rgba(251,146,60,.16)',label:'ARCANE FORGE'};
+    if(t.includes('湯'))return {bg:'radial-gradient(circle at 50% 70%,rgba(103,232,249,.22),transparent 42%),linear-gradient(180deg,#10252d,#081014 75%)',accent:'rgba(103,232,249,.12)',label:'HEALING SPA'};
+    if(t.includes('ラッキー'))return {bg:'radial-gradient(circle at center,rgba(74,222,128,.22),transparent 42%),linear-gradient(180deg,#0d2819,#080d0a 75%)',accent:'rgba(74,222,128,.12)',label:'LUCKY FLOOR'};
+    if(room.tier===4)return {bg:'radial-gradient(circle at center,rgba(248,113,113,.18),transparent 45%),linear-gradient(180deg,#2a1010,#0d0909 75%)',accent:'rgba(248,113,113,.12)',label:'EPIC FLOOR'};
+    if(room.tier===5)return {bg:'radial-gradient(circle at center,rgba(250,204,21,.24),transparent 44%),linear-gradient(180deg,#33260b,#0d0b06 75%)',accent:'rgba(250,204,21,.14)',label:'LEGEND FLOOR'};
+    return {bg:tierMeta[Math.min(4,Math.max(0,room.tier-1))].bg,accent:'rgba(255,255,255,.05)',label:''};
+  },[room,s.inHell]);
+
   const resultColor=room.resultType==='success'?'green':room.resultType==='danger'?'red':room.resultType==='gold'?'yellow':'gray';
   const tier=tierMeta[Math.min(4,Math.max(0,room.tier-1))];
   const finalMode=s.turnsLeft<=0 && !moving && !gameover;
@@ -484,7 +509,7 @@ export default function InfiniteElevator(){
 
   const handleButtonSound=(e:React.MouseEvent)=>{const el=e.target as HTMLElement;if(el.closest('button'))playSfx('click',soundOn);};
 
-  return <><style>{`@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-3deg)}to{transform:scale(1.08) rotate(3deg)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
+  return <><style>{`@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-3deg)}to{transform:scale(1.08) rotate(3deg)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{from{opacity:.45;transform:scale(.98)}to{opacity:1;transform:scale(1.03)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
     <Box onClickCapture={handleButtonSound} w="100%" maxW="432px" h={{base:'100dvh',md:'min(860px, calc(100dvh - 32px))'}} maxH={{base:'100dvh',md:'calc(100dvh - 32px)'}} bg="#0f141d" borderRadius={{base:0,md:'3xl'}} overflow="hidden" position="relative" borderWidth={{base:0,md:'4px'}} borderColor="whiteAlpha.200" boxShadow="2xl">
       {menu&&<Flex position="absolute" inset={0} zIndex={40} p={6} bg="linear-gradient(#0f172a,#0f141d,#000)" direction="column" justify="space-between" align="center" textAlign="center">
         <Box mt={8}><Center mx="auto" w="82px" h="82px" borderRadius="2xl" bg="cyan.400" color="cyan.200" bgColor="rgba(0,240,255,.1)" border="1px solid rgba(0,240,255,.3)"><Icon as={FaElevator} boxSize={12} animation="pulseGlow 2s infinite"/></Center><Text fontSize="3xl" fontWeight="black" mt={3}>無限エレベーター</Text><Text fontSize="xs" color="cyan.300" fontWeight="bold" letterSpacing="widest">INFINITE ELEVATOR</Text></Box>
@@ -499,8 +524,8 @@ export default function InfiniteElevator(){
           <HStack minH="14px" mt={1} spacing={1}>{s.ringBuff.active&&<Badge colorScheme="green">指輪+{s.ringBuff.amount} 残{s.ringBuff.turns}T</Badge>}{s.mirrorMultiplier>1&&<Badge colorScheme="cyan">鏡x{s.mirrorMultiplier}</Badge>}{s.partySet&&<Badge colorScheme="pink">演出2以上確定</Badge>}</HStack>
         </Box>
 
-        <Flex flex="1" minH={0} position="relative" p={2} align="center" justify="center" bg={s.inHell?'linear-gradient(#450a0a,#000)':tier.bg} overflow="hidden">
-          <VStack zIndex={10} w="100%" maxW="320px" spacing={2} maxH="100%" overflowY="auto"><Badge colorScheme={room.tier===5?'yellow':'gray'}>{s.inHell?'Tier 6 HELL':tier.name}</Badge><Center w="62px" h="62px" rounded="2xl" bg="gray.800" border="2px solid" borderColor={roomIdentity.color} boxShadow={`0 0 22px ${roomIdentity.glow}`}><Icon as={roomIdentity.icon} boxSize={6} color={roomIdentity.color}/></Center><Text fontWeight="bold">{room.title}</Text><Text fontSize="xs" color="gray.300" textAlign="center" px={2}>{room.desc}</Text>{room.result&&<Badge px={3} py={1} maxW="100%" whiteSpace="normal" textAlign="center" lineHeight="1.4" colorScheme={resultColor}>{room.result}</Badge>}{interactive&&<Box w="100%" mt={2}>{interactive}</Box>}</VStack>
+        <Flex flex="1" minH={0} position="relative" p={2} align="center" justify="center" bg={roomAtmosphere.bg} overflow="hidden">
+          <Box position="absolute" inset={0} pointerEvents="none" opacity={.7} bgImage={`repeating-linear-gradient(135deg, transparent 0 28px, ${roomAtmosphere.accent} 29px 30px)`}/>{roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Center position="absolute" inset={0} zIndex={16} pointerEvents="none" bg={rareArrival===5?'radial-gradient(circle,rgba(253,224,71,.34),rgba(0,0,0,.08) 55%,rgba(0,0,0,.55))':'radial-gradient(circle,rgba(248,113,113,.25),transparent 60%)'} animation="rareArrival .45s ease-in-out infinite alternate"><Text fontSize={rareArrival===5?'2xl':'lg'} fontWeight="black" color={rareArrival===5?'yellow.100':'red.100'} textShadow="0 0 22px currentColor" letterSpacing=".15em">{rareArrival===5?'✦ LEGEND FLOOR ✦':'EPIC FLOOR'}</Text></Center>}<VStack zIndex={10} w="100%" maxW="320px" spacing={2} maxH="100%" overflowY="auto"><Badge colorScheme={room.tier===5?'yellow':'gray'}>{s.inHell?'Tier 6 HELL':tier.name}</Badge><Center w="62px" h="62px" rounded="2xl" bg="gray.800" border="2px solid" borderColor={roomIdentity.color} boxShadow={`0 0 22px ${roomIdentity.glow}`}><Icon as={roomIdentity.icon} boxSize={6} color={roomIdentity.color}/></Center><Text fontWeight="bold">{room.title}</Text><Text fontSize="xs" color="gray.300" textAlign="center" px={2}>{room.desc}</Text>{room.result&&<Badge px={3} py={1} maxW="100%" whiteSpace="normal" textAlign="center" lineHeight="1.4" colorScheme={resultColor}>{room.result}</Badge>}{interactive&&<Box w="100%" mt={2}>{interactive}</Box>}</VStack>
           <Box position="absolute" top={0} left={0} w="50%" h="100%" bg="gray.900" borderRight="2px solid" borderColor="gray.700" zIndex={20} transform={doors?'translateX(-100%)':'translateX(0)'} transition={`transform ${0.6/gameSpeed}s cubic-bezier(.77,0,.175,1)`}/><Box position="absolute" top={0} right={0} w="50%" h="100%" bg="gray.900" borderLeft="2px solid" borderColor="gray.700" zIndex={20} transform={doors?'translateX(100%)':'translateX(0)'} transition={`transform ${0.6/gameSpeed}s cubic-bezier(.77,0,.175,1)`}/>
           {overlay.show&&<Center position="absolute" inset={0} bg={overlay.tier===4?'linear-gradient(180deg,rgba(69,26,3,.96),rgba(0,0,0,.97))':'rgba(0,0,0,.94)'} zIndex={30} flexDir="column" overflow="hidden"><Box position="absolute" inset="-20%" bg={overlay.tier===4?'radial-gradient(circle,rgba(250,204,21,.25),transparent 50%)':overlay.tier===3?'radial-gradient(circle,rgba(168,85,247,.22),transparent 50%)':overlay.tier===2?'radial-gradient(circle,rgba(16,185,129,.16),transparent 50%)':'radial-gradient(circle,rgba(34,211,238,.12),transparent 50%)'} animation="elevatorAura .55s ease-in-out infinite alternate"/><Text zIndex={1} fontSize="10px" letterSpacing=".24em" color="whiteAlpha.700" fontWeight="900">ELEVATOR SYSTEM</Text><Badge zIndex={1} mt={2} px={3} py={1} fontSize="xs" colorScheme={overlay.tier===4?'yellow':overlay.tier===3?'purple':overlay.tier===2?'green':'cyan'}>{['','NORMAL RISE','🚀 BOOSTER','⚡ LIMIT BREAK','✨ OVERDRIVE / 激熱 ✨'][overlay.tier]}</Badge>{overlay.tier>=3&&<Text zIndex={1} mt={2} fontSize={overlay.tier===4?'xl':'md'} fontWeight="black" color={overlay.tier===4?'yellow.200':'purple.200'} textShadow="0 0 18px currentColor" animation="hypeBlink .28s steps(2) infinite">{overlay.tier===4?'超 激 熱':'CHANCE UP!'}</Text>}<Text zIndex={1} fontFamily="mono" fontSize={overlay.locked?'7xl':'6xl'} fontWeight="black" color={tierMeta[Math.min(4,overlay.tier-1)].color} textShadow="0 0 24px currentColor" transform={overlay.locked?'scale(1.08)':'scale(.92)'} transition="all .18s ease">+{overlay.steps}</Text><Text zIndex={1} fontSize="11px" color={overlay.locked?'white':'gray.300'} fontWeight={overlay.locked?'900':'600'} mt={2}>{overlay.detail}</Text><HStack zIndex={1} mt={3} spacing={1}>{Array.from({length:8}).map((_,i)=><Box key={i} w="18px" h="4px" rounded="full" bg={i<overlay.tier*2?(overlay.tier===4?'yellow.300':overlay.tier===3?'purple.300':overlay.tier===2?'green.300':'cyan.300'):'whiteAlpha.200'} boxShadow={i<overlay.tier*2?'0 0 8px currentColor':undefined}/>)}</HStack></Center>}
         </Flex>
@@ -510,7 +535,7 @@ export default function InfiniteElevator(){
       </Flex>
 
       <InfoModal ctl={rules} title="ルール説明" color="green"><Text>【基本ルール】ボタンを押すとランダムな階数分上へ進みます。全10回でどこまで登れるかを競います。</Text><Text>【運気】高いほど移動階数の補正ボーナスが大きくなります。</Text><Text>【ショップ＆宝石】採掘した宝石はショップで売却できます。</Text><Text>【カジノ】スロットで同じ絵柄が3つ揃うと高倍率配当です。</Text></InfoModal>
-      <InfoModal ctl={guide} title="ステージガイド" color="cyan">{['Tier 1 (40%): 基本イベント・ショップ・宝箱など','Tier 2 (30%): ブラックジャック・自販機・ルビー採掘など','Tier 3 (20%): スロット・エメラルド採掘・アイテム箱など','Tier 4 (9%): ダイヤ採掘・ワープ・競売・タイムカプセル','Tier 5 (1%): 究極のルーレット・神の故郷'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
+      <InfoModal ctl={guide} title="ステージガイド" color="cyan">{['Tier 1 (40%): 基本イベント・ショップ・宝箱など','Tier 2 (30%): ブラックジャック・自販機・ルビー採掘など','Tier 3 (20%): スロット・エメラルド採掘・アイテム箱など','Tier 4 (9%): ダイヤ採掘・ワープ・神々の競売場','Tier 5 (1%): 究極のルーレット・神の故郷'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
       <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">{['乱反射の鏡★n: 次の移動階数がn倍','幸運の指輪★n: 3ターン運気+n','賢者の宝石: 現在階の1の位だけ運気UP','お店チケット: 次の部屋がお店','パーティーセット: 次回好演出','お金のなる木 / 幸せのお守り: 毎ターン効果','宝石: ショップで売却'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
       <Modal isOpen={rank.isOpen} onClose={rank.onClose} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px"><ModalHeader color="yellow.300">全国ランキング (Top 50)</ModalHeader><ModalBody maxH="55vh" overflowY="auto"><Text mb={2} fontSize="10px" color={rankingStatus==='online'?'green.300':rankingStatus==='connecting'?'yellow.300':'orange.300'}>{rankingStatus==='online'?'● Firebaseランキング接続中':rankingStatus==='connecting'?'Firebaseへ接続中…':rankingStatus==='offline'?'ローカルランキングモード':'Firebase接続エラー'}</Text>{rankings.length?rankings.map((r,i)=><Flex key={r.id||i} py={1.5} borderBottom="1px solid" borderColor="whiteAlpha.100"><Text w="30px">#{i+1}</Text><Text flex="1" noOfLines={1}>{r.name}</Text><Text color="cyan.300">{r.score}階</Text></Flex>):<Text color="gray.500">まだ登録がありません</Text>}</ModalBody><ModalFooter><Button onClick={rank.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
       <Modal isOpen={pendingOverflow!==null} onClose={()=>{}} closeOnOverlayClick={false} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="350px"><ModalHeader color="yellow.300">持ち物がいっぱいです</ModalHeader><ModalBody><Text fontSize="xs" color="gray.300" mb={3}>新しく「{pendingOverflow?.name}」を入手しました。4つのうち捨てる1つを選んでください。</Text><Stack spacing={2}>{[...s.items,...(pendingOverflow?[pendingOverflow]:[])].map((it,i)=>{const pal=itemPalette(it);return <Button key={`${it.id}-${i}`} h="54px" justifyContent="flex-start" bg={pal.bg} color={pal.text} border="1px solid" borderColor={pal.border} _hover={{filter:'brightness(1.15)'}} onClick={()=>resolveOverflow(i)}><HStack w="100%"><Icon as={it.icon||FaGift} color={pal.icon}/><Box flex="1" textAlign="left"><Text fontSize="11px" fontWeight="900">{it.name}{it.type==='gem'?` ×${it.count||1}`:''}</Text><Text fontSize="9px" color="whiteAlpha.700">{i===3?'新しく入手したアイテム':'現在の持ち物'}</Text></Box><Text fontSize="10px" color="red.200" fontWeight="900">これを捨てる</Text></HStack></Button>})}</Stack></ModalBody></ModalContent></Modal>

@@ -176,3 +176,24 @@ firebase deploy --only firestore:rules
 ```
 
 GitHub Pages側はこれまで通り `git push` で更新できます。
+
+
+## v25: 旧 Cloud Functions フォルダの削除
+
+無料 Top 50 版では `functions/` は不要です。以前の版からGitHubリポジトリを更新している場合、古い `functions/` が追跡されたまま残ることがあります。
+
+```bash
+git rm -r functions
+git add tsconfig.json
+git commit -m "Remove old Firebase Functions"
+git push origin main
+```
+
+`tsconfig.json` でも `functions` を型チェック対象外にしてあるため、旧フォルダがローカルに残っていても Next.js のビルド対象にはなりません。
+
+## v26 visual update
+- Removed the Time Capsule room from Tier 4.
+- Slower slot reel stopping and a dedicated REACH animation when the first two symbols match.
+- Richer Tier 5 / God Home BGM generated with Web Audio.
+- Tier 4/5 arrival effects.
+- Event-specific room backgrounds (casino, mining, fortune, altar, warp, forge, shops, God Home, hell, etc.).
