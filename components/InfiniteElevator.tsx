@@ -250,10 +250,37 @@ export default function InfiniteElevator(){
   const setupMining=(tier:number,gem:ItemId)=>{setRocks(Array.from({length:5},()=>{const ok=Math.random()<.8;return {gem:ok?gem:null,count:ok?ri(1,3):0,open:false}}));setPicks(2);show({tier,title:gem==='ruby'?'ルビーの採掘場':gem==='emerald'?'エメラルドの採掘場':'ダイヤモンドの採掘場',desc:'5つの岩から2つ壊そう！宝石が出るかも！',result:'岩を選んで壊そう',kind:'mining'});};
   const setupShop=(tier:number,count:number)=>{const pool=[makeItem('mirror',ri(3,5)),makeItem('ring',ri(6,9)),makeItem('shop_ticket'),makeItem('sage_gem'),makeItem('party_set'),makeItem('money_tree',ri(1,2)),makeItem('blessing_charm',ri(1,2))].sort(()=>Math.random()-.5).slice(0,count).map(item=>({item,sold:false}));setShop(pool);show({tier,title:count===1?'小さなお店':count===3?'大きなお店':'ホームセンター',desc:'アイテムの購入が可能。※宝石のみ売却できます。',result:'ショップ営業中',kind:'shop'});};
 
-  const press=()=>{if(moving||gameover||s.turnsLeft<=0||s.inHell)return; playSfx('door',soundOn); setMoving(true);setDoors(false); let x={...s}; x.turnsLeft--; x.items.forEach(i=>{if(i.id==='money_tree')x.money+=200*(i.paramN||1); if(i.id==='blessing_charm')x.luck+=(i.paramN||1);}); if(x.ringBuff.active){x.ringBuff={...x.ringBuff,turns:x.ringBuff.turns-1}; if(x.ringBuff.turns<=0){x.luck-=x.ringBuff.amount;x.ringBuff={active:false,turns:0,amount:0};}} const r=Math.random()*100; let t=x.partySet?(Math.random()<.72?2:Math.random()<.9?3:4):(r<65?1:r<90?2:r<98?3:4); x.partySet=false; const base=t===1?ri(1,12):t===2?ri(10,30):t===3?ri(25,50):ri(40,80); const mult=t===1?ri(2,3):t===2?ri(3,4):t===3?ri(4,5):ri(5,7); let steps=(base+Math.max(0,x.luck)*mult)*x.mirrorMultiplier; const detail=`基礎:${base} + 運気(${x.luck})x${mult}${x.mirrorMultiplier>1?` (鏡 x${x.mirrorMultiplier})`:''}`; x.mirrorMultiplier=1; setS(x); window.setTimeout(()=>{setOverlay({show:true,tier:t,steps:ri(1,Math.max(12,Math.min(99,steps))),detail:'フロア抽選中…',locked:false});let ticks=0;const timer=window.setInterval(()=>{ticks++;playSfx(t>=3?'slotStop':'click',soundOn);setOverlay(o=>({...o,steps:ri(Math.max(1,Math.floor(steps*.25)),Math.max(2,Math.floor(steps*1.15))),detail:t===4?'🔥 神速上昇チャンス…！':t===3?'⚡ 高出力モード抽選中…':t===2?'🚀 ブースター加速中…':'上昇階数を抽選中…'}));},90);window.setTimeout(()=>{window.clearInterval(timer);playSfx((`move${t}` as SfxName),soundOn);if(t>=3)playSfx('jackpot',soundOn);setOverlay({show:true,tier:t,steps,detail,locked:true});window.setTimeout(()=>{setOverlay(o=>({...o,show:false}));setS(y=>({...y,floor:y.floor+steps,logs:[`【ボタン】演出${t}! +${steps}階登った！`,...y.logs]}));window.setTimeout(()=>{playSfx('arrive',soundOn);triggerRoom();setDoors(true);setMoving(false);},180);},1050);},850);},420);};
+  const press=()=>{if(moving||gameover||s.turnsLeft<=0||s.inHell)return; playSfx('door',soundOn); setMoving(true);setDoors(false); let x={...s}; x.turnsLeft--; x.items.forEach(i=>{if(i.id==='money_tree')x.money+=200*(i.paramN||1); if(i.id==='blessing_charm')x.luck+=(i.paramN||1);}); if(x.ringBuff.active){x.ringBuff={...x.ringBuff,turns:x.ringBuff.turns-1}; if(x.ringBuff.turns<=0){x.luck-=x.ringBuff.amount;x.ringBuff={active:false,turns:0,amount:0};}}
+    let targetTier=1;
+    if(x.partySet){const r=Math.random();targetTier=r<.72?2:r<.92?3:4;}
+    else {const r=Math.random();targetTier=r<.65?1:r<.90?2:r<.98?3:4;}
+    x.partySet=false;
+    const base=targetTier===1?ri(1,12):targetTier===2?ri(10,30):targetTier===3?ri(25,50):ri(40,80);
+    const luckMult=targetTier===1?ri(2,3):targetTier===2?ri(3,4):targetTier===3?ri(4,5):ri(5,7);
+    const rawSteps=base+Math.max(0,x.luck)*luckMult;
+    const mirrorMul=x.mirrorMultiplier;
+    const finalSteps=rawSteps*mirrorMul;
+    x.mirrorMultiplier=1;
+    setS(x);
+    window.setTimeout(()=>{
+      setOverlay({show:true,tier:1,steps:ri(1,12),detail:'NORMALから昇格抽選スタート…',locked:false});
+      let currentTier=1; let ticks=0;
+      const timer=window.setInterval(()=>{ticks++;playSfx(currentTier>=3?'slotStop':'click',soundOn);setOverlay(o=>({...o,steps:ri(1,Math.max(12,Math.min(99,rawSteps))),detail:currentTier===1?'昇格するか…？':currentTier===2?'🚀 さらに上へ昇格抽選…！':currentTier===3?'⚡ OVERDRIVE昇格を抽選中…！':'🔥 神速モード確定へ…！'}));},85);
+      const promote=(tier:number,msg:string)=>{currentTier=tier;playSfx((`move${Math.min(4,tier)}` as SfxName),soundOn);setOverlay(o=>({...o,tier,detail:msg}));};
+      if(targetTier>=2)window.setTimeout(()=>promote(2,'昇格！ 🚀 BOOSTER'),420);
+      if(targetTier>=3)window.setTimeout(()=>promote(3,'さらに昇格！ ⚡ LIMIT BREAK'),760);
+      if(targetTier>=4)window.setTimeout(()=>{promote(4,'最上位昇格！ ✨ OVERDRIVE / 激熱 ✨');playSfx('jackpot',soundOn);},1080);
+      window.setTimeout(()=>{
+        window.clearInterval(timer);
+        setOverlay({show:true,tier:targetTier,steps:rawSteps,detail:`素の上昇値：基礎${base} + 運気(${x.luck})×${luckMult}`,locked:true});
+        const finish=()=>{setOverlay({show:true,tier:targetTier,steps:finalSteps,detail:mirrorMul>1?`✨ 倍率適用完了！ ${rawSteps} × ${mirrorMul} = ${finalSteps}階 ✨`:`上昇階数 +${finalSteps} 確定！`,locked:true});playSfx(targetTier>=3?'jackpot':'arrive',soundOn);window.setTimeout(()=>{setOverlay(o=>({...o,show:false}));setS(y=>({...y,floor:y.floor+finalSteps,logs:[`【ボタン】演出${targetTier}! +${finalSteps}階登った！`,...y.logs]}));window.setTimeout(()=>{playSfx('arrive',soundOn);triggerRoom();setDoors(true);setMoving(false);},180);},900);};
+        if(mirrorMul>1){window.setTimeout(()=>{playSfx('item',soundOn);setOverlay({show:true,tier:targetTier,steps:rawSteps,detail:`🪞 乱反射の鏡★${mirrorMul} 発動！ ${rawSteps}階を ×${mirrorMul} へ！`,locked:true});window.setTimeout(finish,900);},650);}else{window.setTimeout(finish,650);}
+      },1380);
+    },420);
+  };
 
   const useItem=(i:number)=>{playSfx('item',soundOn);const item=s.items[i]; if(!item||item.type!=='consumable')return; const ns={...s,items:[...s.items]}; if(item.id==='mirror')ns.mirrorMultiplier=item.paramN||1; else if(item.id==='ring'){if(ns.ringBuff.active)return;ns.ringBuff={active:true,turns:3,amount:item.paramN||1};ns.luck+=item.paramN||1;} else if(item.id==='sage_gem')ns.luck+=ns.floor%10; else if(item.id==='party_set')ns.partySet=true; else if(item.id==='shop_ticket')setForcedShop(true); ns.items.splice(i,1);setS(ns);setSelected(null);};
-  const sellGem=(i:number)=>{playSfx('sell',soundOn);const item=s.items[i];if(item?.type!=='gem')return;const total=item.price*(item.count||1);setS(x=>({...x,money:x.money+total,items:x.items.filter((_,j)=>j!==i)}));setSelected(null);};
+  const sellGem=(i:number)=>{const item=s.items[i];if(item?.type!=='gem'||room.kind!=='shop'){playSfx('fail',soundOn);return;}playSfx('sell',soundOn);const total=item.price*(item.count||1);setS(x=>({...x,money:x.money+total,items:x.items.filter((_,j)=>j!==i)}));setSelected(null);};
   const discard=(i:number)=>{playSfx('discard',soundOn);setS(x=>({...x,items:x.items.filter((_,j)=>j!==i)}));setSelected(null);};
 
   const submitScore=()=>{playSfx('success',soundOn);const name=nickname.trim()||'名無しの登山者';const all=[...rankings,{name,score:s.floor,floor:s.floor,money:s.money,luck:s.luck,date:new Date().toLocaleDateString()}].sort((a,b)=>b.score-a.score).slice(0,50);setRankings(all);localStorage.setItem('infinite_elevator_local_rankings',JSON.stringify(all));localStorage.setItem('infinite_elevator_nickname',name);};
@@ -263,7 +290,14 @@ export default function InfiniteElevator(){
 
   const interactive=useMemo(()=>{
     const kind=room.kind;
-    if(kind==='doors')return <SimpleGrid columns={2} spacing={2}><Action title="軋んだ扉" sub="ティア1確定" onClick={()=>executeRoom(1)}/><Action title="金の扉" sub="ティア4以上確定" onClick={()=>executeRoom(Math.random()<.8?4:5)}/></SimpleGrid>;
+    if(kind==='doors')return <SimpleGrid columns={2} spacing={2}>
+      <Action title="軋んだ扉" sub="ティア1確定" onClick={()=>executeRoom(1)}/>
+      <Action title="銀の扉" sub="ティア3以上確定" onClick={()=>{const r=Math.random();executeRoom(r<.667?3:r<.967?4:5);}}/>
+      <Action title="金の扉" sub="ティア4以上確定" onClick={()=>executeRoom(Math.random()<.9?4:5)}/>
+      <Action title="運気の扉" sub="ラッキー系の部屋" onClick={()=>{const r=ri(1,3);executeRoom(r,r===1?'LUCKY':r===2?'SUPER_LUCKY':'SUPER_LUCKY_3');}}/>
+      <Action title="健康の扉" sub="健康・無病・不老不死の湯" onClick={()=>{const r=ri(1,3);executeRoom(r,r===1?'HEALTH':r===2?'HEALTH_2':'HEALTH_3');}}/>
+      <Action title="お金の扉" sub="ルビー・エメラルド・ダイヤ採掘" onClick={()=>{const r=ri(2,4);executeRoom(r,r===2?'RUBY_MINING':r===3?'EMERALD_MINING':'DIAMOND_MINING');}}/>
+    </SimpleGrid>;
     if(kind==='boxes'){
       const names=['赤','青','緑'];
       const rewardText=(r:{type:'money'|'luck'|'turn',value:number})=>r.type==='money'?`${r.value}円`:r.type==='luck'?`運気 +${r.value}`:`回数 +${r.value}`;
@@ -405,7 +439,7 @@ export default function InfiniteElevator(){
       <InfoModal ctl={guide} title="ステージガイド" color="cyan">{['Tier 1 (40%): 基本イベント・ショップ・宝箱など','Tier 2 (30%): ブラックジャック・自販機・ルビー採掘など','Tier 3 (20%): スロット・エメラルド採掘・アイテム箱など','Tier 4 (9%): ダイヤ採掘・ワープ・競売・タイムカプセル','Tier 5 (1%): 究極のルーレット・神の故郷'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
       <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">{['乱反射の鏡★n: 次の移動階数がn倍','幸運の指輪★n: 3ターン運気+n','賢者の宝石: 現在階の1の位だけ運気UP','お店チケット: 次の部屋がお店','パーティーセット: 次回好演出','お金のなる木 / 幸せのお守り: 毎ターン効果','宝石: ショップで売却'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
       <Modal isOpen={rank.isOpen} onClose={rank.onClose} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px"><ModalHeader color="yellow.300">全国ランキング (Top 50)</ModalHeader><ModalBody maxH="55vh" overflowY="auto">{rankings.length?rankings.map((r,i)=><Flex key={i} py={1.5} borderBottom="1px solid" borderColor="whiteAlpha.100"><Text w="30px">#{i+1}</Text><Text flex="1">{r.name}</Text><Text color="cyan.300">{r.score}階</Text></Flex>):<Text color="gray.500">まだ登録がありません</Text>}</ModalBody><ModalFooter><Button onClick={rank.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
-      <Modal isOpen={selected!==null} onClose={()=>setSelected(null)} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="330px"><ModalHeader color="white"><HStack><Center w="36px" h="36px" rounded="lg" bg="gray.700"><Icon as={selectedItem?.icon||FaGift} color={selectedItem?itemPalette(selectedItem).icon:'gray.200'}/></Center><Text>{selectedItem?.name}</Text></HStack></ModalHeader><ModalBody><Text fontSize="sm" color="gray.100">{selectedItem?.desc}</Text></ModalBody><ModalFooter gap={2}>{selectedItem?.type==='consumable'&&<Button colorScheme="green" onClick={()=>useItem(selected!)}>使用する</Button>}{selectedItem?.type==='gem'&&<Button colorScheme="yellow" onClick={()=>sellGem(selected!)}>売却 +{(selectedItem.price*(selectedItem.count||1))}円</Button>}<Button colorScheme="red" variant="outline" onClick={()=>discard(selected!)}>捨てる</Button><Button onClick={()=>setSelected(null)}>閉じる</Button></ModalFooter></ModalContent></Modal>
+      <Modal isOpen={selected!==null} onClose={()=>setSelected(null)} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="330px"><ModalHeader color="white"><HStack><Center w="36px" h="36px" rounded="lg" bg="gray.700"><Icon as={selectedItem?.icon||FaGift} color={selectedItem?itemPalette(selectedItem).icon:'gray.200'}/></Center><Text>{selectedItem?.name}</Text></HStack></ModalHeader><ModalBody><Text fontSize="sm" color="gray.100">{selectedItem?.desc}</Text></ModalBody><ModalFooter gap={2}>{selectedItem?.type==='consumable'&&<Button colorScheme="green" onClick={()=>useItem(selected!)}>使用する</Button>}{selectedItem?.type==='gem'&&room.kind==='shop'&&<Button colorScheme="yellow" onClick={()=>sellGem(selected!)}>売却 +{(selectedItem.price*(selectedItem.count||1))}円</Button>}{selectedItem?.type==='gem'&&room.kind!=='shop'&&<Text fontSize="xs" color="gray.400" alignSelf="center">宝石はショップ系の部屋でのみ売却できます</Text>}<Button colorScheme="red" variant="outline" onClick={()=>discard(selected!)}>捨てる</Button><Button onClick={()=>setSelected(null)}>閉じる</Button></ModalFooter></ModalContent></Modal>
       <Modal isOpen={gameover} onClose={()=>{}} closeOnOverlayClick={false} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px" textAlign="center"><ModalHeader>ゲーム終了</ModalHeader><ModalBody><Text fontSize="xs" color="gray.400">最終到達階数</Text><Text fontSize="4xl" color="cyan.300" fontFamily="mono" fontWeight="black">{s.floor} 階</Text><HStack mt={3}><Input value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="プレイヤー名" textAlign="center"/><Button colorScheme="yellow" onClick={submitScore}>登録</Button></HStack><HStack justify="space-between" mt={3} color="gray.400"><Text fontSize="xs">最終所持金: <b>{s.money}円</b></Text><Text fontSize="xs">最終運気: <b>{s.luck}</b></Text></HStack></ModalBody><ModalFooter><Button w="100%" colorScheme="cyan" onClick={()=>{setGameover(false);setMenu(true)}}>メインメニューへ</Button></ModalFooter></ModalContent></Modal>
     </Box>
   </Center></>;
