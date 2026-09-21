@@ -19,7 +19,10 @@ service cloud.firestore {
         && request.resource.data.luck >= -1000000
         && request.resource.data.luck <= 1000000
         && request.resource.data.keys().hasOnly(['uid','name','score','floor','money','luck','createdAt']);
-      allow update, delete: if false;
+      allow update: if false;
+      // 無料版ではスコア登録後のTop50整理をクライアント側で行うため、
+      // 匿名認証済みユーザーに削除を許可します。
+      allow delete: if request.auth != null;
     }
   }
 }

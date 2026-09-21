@@ -139,7 +139,7 @@ npm run dev
 - ゲーム終了画面からニックネームとスコアを登録
 - 匿名Firebase Authenticationで書き込みユーザーを識別
 - 読み取りは公開、追加は認証済みユーザーのみ
-- ランキングの更新・削除はクライアントから禁止
+- ランキングの更新は禁止。削除はTop 50整理のため匿名認証済みクライアントに許可
 - Firebase未設定時はlocalStorageランキングへフォールバック
 
 ## v22 gameplay adjustments
@@ -148,3 +148,31 @@ npm run dev
 - Mining gem rate reduced to 55%; most finds are 1 gem, occasionally 2.
 - Forge caps: Mirror ★8, Lucky Ring ★15, Money Tree ★3, Happiness Charm ★3.
 - Barter exchange for +1 turn now costs 600 yen.
+
+## v23: イベント変更
+
+- 宝石採掘場: 2回掘り終えると、選ばなかった3つの岩の中身も薄く表示して公開します。入手できるのは実際に選んで掘った岩の宝石だけです。
+- 運試しの祭壇: `運気 / 階数 / 金運 / 健康運` の4つから1回だけ祈れます。成功率は30%です。
+- 占い師の小部屋: 「占ってもらう」を押すと演出後に `大吉〜大凶` の運勢とコメント、運気の増減が表示されます。
+
+## ランキングを無料でTop 50だけに保つ仕組み
+
+この版では Cloud Functions を使いません。Spark無料プランのまま、ランキング登録後にブラウザ側でFirestoreをスコア順に読み直し、51位以下を削除します。
+
+### 必須: Firestore Rulesを更新
+
+`firestore.rules` を Firebase Console → Firestore Database → Rules に貼り付けて公開してください。
+
+この無料方式では、匿名認証済みユーザーに `rankings` の削除権限を与える必要があります。そのため Cloud Functions版より改ざん耐性は低くなります。まず無料で運用したい場合向けの構成です。
+
+### Cloud Functionsは不要
+
+`functions/` フォルダは削除済みです。Blazeプランへの変更や `firebase deploy --only functions` は不要です。
+
+Firestore Rulesだけデプロイする場合は次でOKです。
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+GitHub Pages側はこれまで通り `git push` で更新できます。
