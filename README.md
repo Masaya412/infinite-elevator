@@ -198,9 +198,7 @@ git push origin main
 - Tier 4/5 arrival effects.
 - Event-specific room backgrounds (casino, mining, fortune, altar, warp, forge, shops, God Home, hell, etc.).
 
-## v28 BGMリニューアル
-- 全BGMを短い電子音中心から、持続コード・低音・アンビエントレイヤー中心へ変更
-- Tier 1: 静かなロビー / Tier 2: 冒険感 / Tier 3: 神秘 / Tier 4: 重厚 / Tier 5: 荘厳
-- 神の故郷: 聖歌・鐘のような神々しい響き
-- カジノ: ラウンジ/ジャズ寄り、地下カードサロン: 暗めのラウンジ、地獄: 低いドローン、占い・祭壇: アンビエント
-- 外部音源ファイル不要。Web Audio APIのみで動作
+## v29 changes
+- ルーレット絵柄3つ揃い時、10〜50倍の倍率ルーレット演出を追加。
+- 3つ揃いの実確率は従来のまま維持しつつ、ハズレの一部を2リール同柄にしてリーチ演出を少し増加。
+- 運試しの祭壇「階数」の成功報酬を +20〜50階 に変更。
