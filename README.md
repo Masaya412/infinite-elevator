@@ -141,3 +141,10 @@ npm run dev
 - 読み取りは公開、追加は認証済みユーザーのみ
 - ランキングの更新・削除はクライアントから禁止
 - Firebase未設定時はlocalStorageランキングへフォールバック
+
+## v22 gameplay adjustments
+- Inventory overflow now opens a 4-item discard chooser (3 held + newly acquired item).
+- Mystery Auction rewards: Ruby x3 / Emerald x3 / Diamond x3 / Mirror ★5-8 / Lucky Ring ★5-15.
+- Mining gem rate reduced to 55%; most finds are 1 gem, occasionally 2.
+- Forge caps: Mirror ★8, Lucky Ring ★15, Money Tree ★3, Happiness Charm ★3.
+- Barter exchange for +1 turn now costs 600 yen.
