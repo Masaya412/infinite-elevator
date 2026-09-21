@@ -112,6 +112,7 @@ export default function InfiniteElevator(){
   const [boxRevealAll,setBoxRevealAll]=useState(false);
   const [slotBet,setSlotBet]=useState(20); const [slot,setSlot]=useState(['❔','❔','❔']); const [slotSpinning,setSlotSpinning]=useState(false);
   const [slotWin,setSlotWin]=useState(false); const [slotMessage,setSlotMessage]=useState('');
+  const [casinoSpinsLeft,setCasinoSpinsLeft]=useState(10);
   const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure();
 
   useEffect(()=>{ const h=Number(localStorage.getItem('infinite_elevator_highscore')||'1'); const n=localStorage.getItem('infinite_elevator_nickname')||''; const r=JSON.parse(localStorage.getItem('infinite_elevator_local_rankings')||'[]'); setS(x=>({...x,highScore:Math.max(1,h)})); setNickname(n); setRankings(r); },[]);
@@ -159,7 +160,7 @@ export default function InfiniteElevator(){
       else if(t==='ALTAR')show({tier,title:'運試しの祭壇',desc:'何を捧げるかで加護が変わる。',result:'祭壇に祈る',kind:'altar'});
       else show({tier,title:'ミステリーオークション',desc:'謎の袋が出品中。(1000円)',result:'競り参加',kind:'mystery'});
     } else if(tier===3){const t=type||pick(['CASINO','SUPER_LUCKY_3','HEALTH_3','EMERALD_MINING','STAIRS_LONG','SHOP_LARGE','ITEM_BOX']);
-      if(t==='CASINO')show({tier,title:'スロットカジノ',desc:'ルビー5倍・エメラルド10倍・ダイヤ30倍。',result:'CASINO OPEN',kind:'casino'});
+      if(t==='CASINO'){setCasinoSpinsLeft(10);setSlotMessage('');setSlot(['❔','❔','❔']);setSlotWin(false);show({tier,title:'スロットカジノ',desc:'1回の訪問につき最大10スピン。ルビー5倍・エメラルド10倍・ダイヤ30倍。',result:'CASINO OPEN / 残り10回',kind:'casino'});} 
       else if(t==='SUPER_LUCKY_3'){const g=ri(6,8);patch({luck:s.luck+g});show({tier,title:'極ラッキー部屋',desc:'祝福の光！',result:`運気 +${g}`,resultType:'gold'});}
       else if(t==='HEALTH_3'){const g=ri(4,5);patch({turnsLeft:s.turnsLeft+g});show({tier,title:'不老不死の湯',desc:'圧倒的な活力！',result:`残り回数 +${g}`,resultType:'gold'});}
       else if(t==='EMERALD_MINING')setupMining(tier,'emerald');
@@ -218,11 +219,17 @@ export default function InfiniteElevator(){
     if(kind==='shop')return <Stack spacing={1.5} maxH="145px" overflowY="auto">{shop.map((g,i)=><Flex key={i} p={2} bg="gray.800" rounded="lg" align="center" opacity={g.sold ? .5 : 1}><Icon as={g.item.icon||FaGift} mr={2}/><Box flex="1"><Text fontSize="11px" fontWeight="bold">{g.item.name}</Text><Text fontSize="9px" color="gray.400">{g.item.price}円</Text></Box><Button size="xs" colorScheme="yellow" isDisabled={g.sold} onClick={()=>{if(s.money<g.item.price){playSfx('fail',soundOn);return;}playSfx('buy',soundOn);patch({money:s.money-g.item.price});addItem(g.item);setShop(x=>x.map((v,j)=>j===i?{...v,sold:true}:v));}}>{g.sold?'SOLD OUT':'購入'}</Button></Flex>)}</Stack>;
     if(kind==='blackjack')return <Stack spacing={2} bg="blackAlpha.400" p={2} rounded="xl"><HStack justify="space-between"><Text fontSize="xs">賭け金</Text><HStack><Button size="xs" onClick={()=>setBj(x=>({...x,bet:Math.max(100,x.bet-100)}))}>-</Button><Text color="yellow.300">{bj.bet}円</Text><Button size="xs" onClick={()=>setBj(x=>({...x,bet:x.bet+100}))}>+</Button></HStack></HStack>{!bj.playing?<Button size="sm" colorScheme="teal" onClick={()=>{if(s.money<bj.bet){playSfx('fail',soundOn);return;}playSfx('card',soundOn);patch({money:s.money-bj.bet});setBj(x=>({...x,playing:true,p:[card(),card()],d:[card(),card()]}));}}>勝負開始！(勝利時2倍)</Button>:<><Text fontSize="xs">あなた: {bj.p.join(' / ')} = {hand(bj.p)}</Text><Text fontSize="xs">Dealer: {bj.d.join(' / ')} = {hand(bj.d)}</Text><HStack><Button size="sm" onClick={()=>{playSfx('card',soundOn);const drawn=card();const p=[...bj.p,drawn];const total=hand(p); if(total>21){playSfx('fail',soundOn);setBj(x=>({...x,p,playing:false}));show({...room,result:`${drawn}を引いて合計${total} → BUST（21超過）`,resultType:'danger'});} else {setBj(x=>({...x,p}));show({...room,result:`${drawn}を引いた → 合計${total}`,resultType:'neutral'});}}}>HIT</Button><Button size="sm" colorScheme="green" onClick={()=>{playSfx('card',soundOn);let d=[...bj.d];while(hand(d)<17)d.push(card());const pv=hand(bj.p),dv=hand(d);const win=dv>21||pv>dv;const draw=pv===dv;playSfx(win?'success':draw?'click':'fail',soundOn);if(win)patch({money:s.money+bj.bet*2});else if(draw)patch({money:s.money+bj.bet});setBj(x=>({...x,d,playing:false}));show({...room,result:win?'勝利！':draw?'引き分け':'敗北...',resultType:win?'gold':draw?'neutral':'danger'});}}>STAND</Button></HStack></>}</Stack>;
     if(kind==='casino')return <Stack spacing={2}>
-      <HStack justify="center"><Button size="xs" isDisabled={slotSpinning} onClick={()=>setSlotBet(Math.max(20,slotBet-20))}>-</Button><Text color="yellow.300" fontWeight="900">{slotBet}円</Text><Button size="xs" isDisabled={slotSpinning} onClick={()=>setSlotBet(slotBet+20)}>+</Button></HStack>
+      <Flex align="center" justify="space-between" bg="whiteAlpha.100" border="1px solid" borderColor="purple.500" rounded="lg" px={3} py={2}>
+        <Text fontSize="11px" color="gray.200" fontWeight="700">この訪問で回せる回数</Text>
+        <Text fontSize="sm" color={casinoSpinsLeft>0?'yellow.300':'red.300'} fontWeight="900">残り {casinoSpinsLeft} / 10 回</Text>
+      </Flex>
+      <HStack justify="center"><Button size="xs" isDisabled={slotSpinning||casinoSpinsLeft<=0} onClick={()=>setSlotBet(Math.max(20,slotBet-20))}>-</Button><Text color="yellow.300" fontWeight="900">{slotBet}円</Text><Button size="xs" isDisabled={slotSpinning||casinoSpinsLeft<=0} onClick={()=>setSlotBet(slotBet+20)}>+</Button></HStack>
       <HStack justify="center" spacing={2}>{slot.map((v,i)=><Center key={i} bg={slotWin?'yellow.900':'black'} border="2px solid" borderColor={slotWin?'yellow.300':slotSpinning?'purple.400':'whiteAlpha.200'} boxShadow={slotWin?'0 0 18px rgba(250,204,21,.85)':'inset 0 0 12px rgba(0,0,0,.7)'} animation={slotWin?'slotJackpot .42s ease-in-out infinite alternate':undefined} rounded="lg" w="62px" h="62px" fontSize="2xl">{v}</Center>)}</HStack>
       {slotMessage&&<Box px={3} py={2} rounded="lg" bg={slotWin?'yellow.900':'whiteAlpha.100'} border="1px solid" borderColor={slotWin?'yellow.300':'whiteAlpha.200'} animation={slotWin?'winText .5s ease-in-out infinite alternate':undefined}><Text textAlign="center" fontSize={slotWin?'sm':'xs'} fontWeight="900" color={slotWin?'yellow.200':'gray.100'}>{slotMessage}</Text></Box>}
       <Button colorScheme="purple" size="sm" isLoading={slotSpinning} loadingText="リール回転中…" onClick={()=>{
+        if(casinoSpinsLeft<=0){playSfx('fail',soundOn);setSlotMessage('このカジノでは10回遊び終えました');show({...room,result:'この訪問での上限10回に到達',resultType:'neutral'});return;}
         if(s.money<slotBet||slotSpinning){playSfx('fail',soundOn);return;}
+        setCasinoSpinsLeft(v=>Math.max(0,v-1));
         const sy=['🔴','🟢','💎','🎡']; const final=[pick(sy),pick(sy),pick(sy)];
         playSfx('casino',soundOn); setS(x=>({...x,money:x.money-slotBet})); setSlotSpinning(true); setSlotWin(false); setSlotMessage('3つのリールが回転中…'); setSlot(['🎰','🎰','🎰']);
         const timers=final.map((_,i)=>window.setInterval(()=>setSlot(cur=>cur.map((v,j)=>j===i?pick(sy):v)),70));
@@ -238,7 +245,7 @@ export default function InfiniteElevator(){
           else{playSfx('fail',soundOn);setSlotMessage('残念…今回は3つ揃わなかった');show({...room,result:'ハズレ… 次の勝負へ！',resultType:'neutral'});}
           setSlotSpinning(false);
         },1540);
-      }}>スロットを回す</Button>
+      }} isDisabled={casinoSpinsLeft<=0}>スロットを回す</Button>
       <Box bg="blackAlpha.500" border="1px solid" borderColor="purple.500" rounded="xl" p={2.5}>
         <Text fontSize="11px" fontWeight="900" color="purple.200" mb={1.5} textAlign="center">🎰 配当表</Text>
         <Stack spacing={1}>
@@ -257,7 +264,7 @@ export default function InfiniteElevator(){
     if(kind==='hell')return <Button w="100%" colorScheme="red" onClick={()=>{if(s.turnsLeft<=0)return;playSfx('hell',soundOn);const roll=ri(1,6);patch({turnsLeft:s.turnsLeft-1});if(roll===5){playSfx('success',soundOn);patch({inHell:false});show({tier:1,title:'地獄から生還',desc:'5が出た！元の世界へ戻った。',result:'生還！',resultType:'success'});}else if(s.turnsLeft-1<=0)end();else {playSfx('fail',soundOn);show({...room,result:`${roll}が出た... 脱出失敗`,resultType:'danger'});}}}>サイコロを振る (回数-1)</Button>;
     return null;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[room,s,rocks,picks,shop,bj,slotBet,slot,slotSpinning,slotWin,slotMessage,soundOn,forgeUsed,fortuneReading,boxRewards,boxSelected,boxRevealAll]);
+  },[room,s,rocks,picks,shop,bj,slotBet,slot,slotSpinning,slotWin,slotMessage,casinoSpinsLeft,soundOn,forgeUsed,fortuneReading,boxRewards,boxSelected,boxRevealAll]);
 
   const selectedItem=selected===null?null:s.items[selected];
   const resultColor=room.resultType==='success'?'green':room.resultType==='danger'?'red':room.resultType==='gold'?'yellow':'gray';
