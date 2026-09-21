@@ -86,6 +86,8 @@ let bgmMood:BgmMood|null=null;
 let bgmTier=1;
 let bgmStep=0;
 let bgmMaster:GainNode|null=null;
+const MENU_MUSIC_VOLUME=.58;
+const IN_GAME_BGM_VOLUME=1.25;
 function stopBgm(){
   if(typeof window!=='undefined' && bgmTimer!==null) window.clearInterval(bgmTimer);
   bgmTimer=null; bgmMood=null; bgmTier=1; bgmStep=0;
@@ -112,7 +114,7 @@ function startBgm(mood:BgmMood, enabled=true, tier=1){
     stopBgm(); bgmMood=mood; bgmTier=tier;
     bgmMaster=ctx.createGain();
     bgmMaster.gain.setValueAtTime(.0001,ctx.currentTime);
-    bgmMaster.gain.exponentialRampToValueAtTime(1,ctx.currentTime+.035);
+    bgmMaster.gain.exponentialRampToValueAtTime(IN_GAME_BGM_VOLUME,ctx.currentTime+.035);
     bgmMaster.connect(ctx.destination);
 
     type MoodCfg={
@@ -373,12 +375,12 @@ export default function InfiniteElevator(){
   const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure();
   const menuAudioRef=useRef<HTMLAudioElement|null>(null);
   const menuMusicSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/autumnbell.mp3`;
-  const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/title-visual.jpg`;
+  const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/title-visual-v2.png`;
 
   const playMenuMusic=()=>{
     const audio=menuAudioRef.current;
     if(!audio||!soundOn||!menu||gameover)return;
-    audio.volume=.58;
+    audio.volume=MENU_MUSIC_VOLUME;
     const result=audio.play();
     if(result) void result.catch(()=>{});
   };
@@ -408,7 +410,7 @@ export default function InfiniteElevator(){
     if(!audio)return;
     if(menu&&!gameover&&soundOn){
       audio.loop=true;
-      audio.volume=.58;
+      audio.volume=MENU_MUSIC_VOLUME;
       const result=audio.play();
       if(result) void result.catch(()=>{});
     }else{
@@ -757,15 +759,23 @@ export default function InfiniteElevator(){
   return <><style>{`@keyframes cathedralFlicker{0%,100%{opacity:.3}50%{opacity:.62}}@keyframes steelSweep{0%{transform:translateX(-160%)}100%{transform:translateX(160%)}}@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-3deg)}to{transform:scale(1.08) rotate(3deg)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{0%{opacity:0;transform:scale(.72)}45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.24)}}@keyframes rareRing{0%{opacity:0;transform:scale(.35)}35%{opacity:.95}100%{opacity:0;transform:scale(1.65)}}@keyframes rareSpark{0%{opacity:0;transform:translateY(18px) scale(.6)}35%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.15)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
     <Box onClickCapture={handleButtonSound} w="100%" maxW="432px" h={{base:'100dvh',md:'min(860px, calc(100dvh - 32px))'}} maxH={{base:'100dvh',md:'calc(100dvh - 32px)'}} bg="#06080a" borderRadius={{base:0,md:'10px'}} overflow="hidden" position="relative" borderWidth={{base:0,md:'1px'}} borderColor="rgba(198,202,204,.30)" boxShadow="0 26px 80px rgba(0,0,0,.78), inset 0 0 70px rgba(255,255,255,.018)">
       <audio ref={menuAudioRef} src={menuMusicSrc} preload="auto" loop/>
-      {menu&&<Flex position="absolute" inset={0} zIndex={40} px={{base:4,md:5}} py={5} bgImage={`linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(1,3,5,.34) 42%,rgba(1,2,4,.88) 77%,#020304 100%), url("${menuVisualSrc}")`} bgSize="100% auto" bgRepeat="no-repeat" bgPosition="center top" bgColor="#020304" direction="column" justify="flex-end" align="center" textAlign="center" overflow="hidden">
-        <Box position="absolute" inset={0} pointerEvents="none" bg="linear-gradient(90deg,rgba(0,0,0,.45),transparent 22%,transparent 78%,rgba(0,0,0,.45))"/>
-        <Box position="absolute" top={0} left="50%" transform="translateX(-50%)" w="34%" h="58%" pointerEvents="none" bg="linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.035) 30%,transparent 88%)" filter="blur(10px)" opacity={.5}/>
-        <IconButton position="absolute" top={3} right={3} aria-label="スタートBGM" size="sm" variant="outline" bg="rgba(4,5,6,.62)" borderColor="rgba(235,232,221,.32)" color={soundOn?'#eee9df':'gray.500'} icon={soundOn?<FaVolumeHigh/>:<FaVolumeXmark/>} _hover={{bg:'rgba(90,20,26,.72)'}} onClick={()=>setSoundOn(v=>!v)}/>
-        <Stack position="relative" w="100%" spacing={2.5} mb={1}>
-          <Flex w="100%" bg="rgba(4,5,6,.76)" borderTop="1px solid rgba(224,222,214,.30)" borderBottom="1px solid rgba(224,222,214,.15)" px={4} py={2.5} justify="space-between" align="center" backdropFilter="blur(5px)"><HStack><Icon as={FaTrophy} color="#b7aa89"/><Text fontSize="11px" letterSpacing=".12em" color="rgba(235,232,222,.72)" fontWeight="bold">自己最高記録</Text></HStack><Text fontFamily="heading" fontSize="xl" color="#eee9df" fontWeight="700" textShadow="0 0 12px rgba(255,255,255,.16)">{s.highScore} 階</Text></Flex>
-          <Button h="56px" bg="linear-gradient(180deg,#17191c,#090a0c)" color="#f1eee6" border="1px solid rgba(232,229,220,.46)" borderRadius="2px" fontFamily="heading" letterSpacing=".16em" fontSize="md" leftIcon={<FaPlay/>} boxShadow="inset 0 1px rgba(255,255,255,.06),0 10px 28px rgba(0,0,0,.55)" _hover={{bg:'linear-gradient(180deg,#3a171b,#12090b)',borderColor:'#b8565c',color:'white'}} _active={{transform:'translateY(1px)',bg:'#18090c'}} onClick={start}>ゲームを始める</Button>
-          <SimpleGrid columns={2} spacing={1.5}>{[[FaRankingStar,'ランキング',rank.onOpen],[FaCircleQuestion,'ルール説明',rules.onOpen],[FaBookOpen,'ステージ図鑑',guide.onOpen],[FaGem,'アイテム図鑑',itemGuide.onOpen]].map(([ic,label,fn]:any)=><Button key={label} size="sm" minH="40px" bg="rgba(7,8,10,.78)" color="rgba(237,234,225,.84)" border="1px solid rgba(180,184,186,.24)" borderRadius="2px" leftIcon={<Icon as={ic}/>} fontFamily="heading" fontSize="11px" letterSpacing=".08em" _hover={{bg:'rgba(54,18,22,.88)',borderColor:'rgba(174,66,74,.75)',color:'white'}} onClick={fn}>{label}</Button>)}</SimpleGrid>
-        </Stack>
+      {menu&&<Flex position="absolute" inset={0} zIndex={40} bgImage={`linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.12) 32%,rgba(2,3,4,.58) 58%,rgba(2,3,4,.92) 76%,#020304 100%), url("${menuVisualSrc}")`} bgSize="cover" bgRepeat="no-repeat" bgPosition="center center" bgColor="#020304" direction="column" overflow="hidden">
+        <Box position="absolute" inset={0} pointerEvents="none" bg="radial-gradient(circle at 50% 12%, rgba(255,255,255,.18), transparent 28%), linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))"/>
+        <Box position="absolute" top={0} left="50%" transform="translateX(-50%)" w={{base:'54%',md:'46%'}} h="68%" pointerEvents="none" bg="linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04) 34%,transparent 82%)" filter="blur(12px)" opacity={.54}/>
+        <IconButton position="absolute" top={3} right={3} zIndex={2} aria-label="スタートBGM" size="sm" variant="outline" bg="rgba(4,5,6,.62)" borderColor="rgba(235,232,221,.32)" color={soundOn?'#eee9df':'gray.500'} icon={soundOn?<FaVolumeHigh/>:<FaVolumeXmark/>} _hover={{bg:'rgba(90,20,26,.72)'}} onClick={()=>setSoundOn(v=>!v)}/>
+        <Box position="absolute" top={4} left={4} zIndex={2} px={3} py={2} bg="rgba(5,6,7,.70)" borderTop="1px solid rgba(224,222,214,.30)" borderBottom="1px solid rgba(224,222,214,.15)" backdropFilter="blur(6px)">
+          <HStack spacing={2}><Icon as={FaTrophy} color="#b7aa89"/><Text fontSize="10px" letterSpacing=".12em" color="rgba(235,232,222,.72)" fontWeight="bold">自己最高記録</Text></HStack>
+          <Text mt={1} fontFamily="heading" fontSize="2xl" color="#eee9df" fontWeight="700" textShadow="0 0 12px rgba(255,255,255,.16)">{s.highScore} 階</Text>
+        </Box>
+
+        <Flex mt="auto" px={{base:4,md:5}} pb={{base:4,md:5}}>
+          <Box w="100%" bg="linear-gradient(180deg,rgba(8,9,11,.80),rgba(4,5,6,.94))" border="1px solid rgba(218,216,208,.24)" borderRadius="4px" boxShadow="0 24px 60px rgba(0,0,0,.55)" p={3} backdropFilter="blur(9px)">
+            <Text fontSize="10px" letterSpacing=".24em" color="rgba(235,232,222,.52)" fontWeight="900">ENDLESS ASCENT</Text>
+            <Text mt={1} fontSize="xs" lineHeight="1.8" color="rgba(235,232,222,.76)">巨大な昇降塔を、ただ上へ。ボタンを押すたびに階数と運命が大きく揺れるダーク運ゲー。</Text>
+            <Button mt={3} h="56px" bg="linear-gradient(180deg,#17191c,#090a0c)" color="#f1eee6" border="1px solid rgba(232,229,220,.46)" borderRadius="2px" fontFamily="heading" letterSpacing=".16em" fontSize="md" leftIcon={<FaPlay/>} boxShadow="inset 0 1px rgba(255,255,255,.06),0 10px 28px rgba(0,0,0,.55)" _hover={{bg:'linear-gradient(180deg,#3a171b,#12090b)',borderColor:'#b8565c',color:'white'}} _active={{transform:'translateY(1px)',bg:'#18090c'}} onClick={start}>ゲームを始める</Button>
+            <SimpleGrid mt={2.5} columns={2} spacing={1.5}>{[[FaRankingStar,'ランキング',rank.onOpen],[FaCircleQuestion,'ルール説明',rules.onOpen],[FaBookOpen,'ステージ図鑑',guide.onOpen],[FaGem,'アイテム図鑑',itemGuide.onOpen]].map(([ic,label,fn]:any)=><Button key={label} size="sm" minH="42px" bg="rgba(7,8,10,.78)" color="rgba(237,234,225,.84)" border="1px solid rgba(180,184,186,.24)" borderRadius="2px" leftIcon={<Icon as={ic}/>} fontFamily="heading" fontSize="11px" letterSpacing=".08em" _hover={{bg:'rgba(54,18,22,.88)',borderColor:'rgba(174,66,74,.75)',color:'white'}} onClick={fn}>{label}</Button>)}</SimpleGrid>
+          </Box>
+        </Flex>
       </Flex>}
 
       <Flex h="100%" direction="column">
@@ -793,9 +803,83 @@ export default function InfiniteElevator(){
         <Box flexShrink={0} bg="#040506" p={2} borderTop="1px solid" borderColor="rgba(205,207,205,.22)"><Button w="100%" h="50px" bg={finalMode?"linear-gradient(180deg,#5b171e,#1e090c)":"linear-gradient(180deg,#1c1f23,#090a0c)"} color="#f1eee6" fontFamily="heading" letterSpacing=".10em" fontSize="md" fontWeight="800" textShadow="0 2px 5px #000" border="1px solid" borderColor={finalMode?"#a44850":"rgba(226,224,216,.42)"} borderRadius="2px" boxShadow={finalMode?"0 0 20px rgba(130,28,36,.30),inset 0 1px rgba(255,255,255,.05)":"0 8px 20px rgba(0,0,0,.50),inset 0 1px rgba(255,255,255,.05)"} _hover={{bg:finalMode?'#6d1c24':'#272a2e',borderColor:finalMode?'#cf666e':'#d9d5ca',color:'white'}} _active={{transform:'translateY(1px)',bg:'#0a0b0d'}} _disabled={{opacity:.48,color:'whiteAlpha.700'}} leftIcon={finalMode?undefined:<FaArrowUp/>} isDisabled={disabled} onClick={()=>{if(finalMode)end();else press();}}>{finalMode?'ゲームを終了する':'ボタンを押す'}</Button></Box>
       </Flex>
 
-      <InfoModal ctl={rules} title="ルール説明" color="green"><Text>【基本ルール】ボタンを押すとランダムな階数分上へ進みます。全10回でどこまで登れるかを競います。</Text><Text>【運気】高いほど移動階数の補正ボーナスが大きくなります。</Text><Text>【ショップ＆宝石】採掘した宝石はショップで売却できます。</Text><Text>【カジノ】スロットで同じ絵柄が3つ揃うと高倍率配当です。</Text></InfoModal>
-      <InfoModal ctl={guide} title="ステージガイド" color="cyan">{['Tier 1 (40%): 基本イベント・ショップ・宝箱など','Tier 2 (30%): ブラックジャック・自販機・ルビー採掘など','Tier 3 (20%): スロット・エメラルド採掘・アイテム箱など','Tier 4 (9%): ダイヤ採掘・ワープ・神々の競売場','Tier 5 (1%): 究極のルーレット・神の故郷'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
-      <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">{['乱反射の鏡★n: 次の移動階数がn倍','幸運の指輪★n: 3ターン運気+n','賢者の宝石: 現在階の1の位だけ運気UP','お店チケット: 次の部屋がお店','パーティーセット: 次回好演出','お金のなる木 / 幸せのお守り: 毎ターン効果','宝石: ショップで売却'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
+      <InfoModal ctl={rules} title="ルール説明" color="green">
+        <HelpSection title="1. ゲームの目的">
+          <Bullet>「ボタンを押す」を使って、限られた回数の中でできるだけ高い階まで登るゲームです。</Bullet>
+          <Bullet>ランキングの主な記録は <b>最終到達階数</b> です。高階層を目指しましょう。</Bullet>
+        </HelpSection>
+        <HelpSection title="2. 基本の流れ">
+          <Bullet>1回ボタンを押すごとに、ランダムな階数だけ上へ進みます。</Bullet>
+          <Bullet>上がった先では、ラッキー部屋・採掘場・カジノ・ショップなど、さまざまなイベント部屋が発生します。</Bullet>
+          <Bullet>残り回数が0になっても、すぐには終了しません。下のボタンが「ゲームを終了する」に変わるので、自分で押した時にリザルトへ進みます。</Bullet>
+        </HelpSection>
+        <HelpSection title="3. 3つの重要ステータス">
+          <Bullet><b>ボタン</b>：残り回数です。0になると新しく移動はできません。</Bullet>
+          <Bullet><b>運気</b>：高いほど、ボタンを押した時の上昇階数ボーナスが大きくなります。</Bullet>
+          <Bullet><b>所持金</b>：ショップ・オークション・カジノなどで使います。</Bullet>
+        </HelpSection>
+        <HelpSection title="4. アイテムと持ち物">
+          <Bullet>持てるアイテムは最大3つです。4つ目を入手した時は、どれを捨てるか自分で選べます。</Bullet>
+          <Bullet>宝石（ルビー・エメラルド・ダイヤモンド）は、ショップ系の部屋に来た時だけ売却できます。</Bullet>
+          <Bullet>消費アイテムは任意のタイミングで使用可能、常時アイテムは持っているだけで効果があります。</Bullet>
+        </HelpSection>
+        <HelpSection title="5. よくある部屋の要点">
+          <Bullet><b>採掘場</b>：5つの岩から2つだけ選べます。最後に選ばなかった岩の中身も公開されます。</Bullet>
+          <Bullet><b>スロットカジノ</b>：1回の訪問につき最大10回まで。絵柄が揃うと倍率に応じた配当がもらえます。</Bullet>
+          <Bullet><b>占い師の小部屋</b>：占い結果によって運気が上下します。</Bullet>
+          <Bullet><b>運試しの祭壇</b>：祈る対象を1つ選び、30%でその能力が上がります。</Bullet>
+        </HelpSection>
+      </InfoModal>
+      <InfoModal ctl={guide} title="ステージ図鑑" color="cyan">
+        <HelpSection title="Tier 1 〔40%〕 基本フロア">
+          <Bullet>最も出やすい階層。ラッキー部屋、健康の湯、短い階段、小さなお店、宝箱などが中心です。</Bullet>
+          <Bullet>序盤の立て直しや、運気・所持金の土台作りに向いています。</Bullet>
+        </HelpSection>
+        <HelpSection title="Tier 2 〔30%〕 発展フロア">
+          <Bullet>ブラックジャック、魔法鍛冶屋、運試しの祭壇、ルビー採掘場、ミステリーオークションなどが登場します。</Bullet>
+          <Bullet>強いアイテムを作ったり、ここから一気に資金と戦力を伸ばせます。</Bullet>
+        </HelpSection>
+        <HelpSection title="Tier 3 〔20%〕 レアフロア">
+          <Bullet>スロットカジノ、エメラルド採掘場、不思議なアイテム箱、極ラッキー部屋などが出現します。</Bullet>
+          <Bullet>ハイリスク・ハイリターンのイベントが増え、ゲームが大きく動きやすい層です。</Bullet>
+        </HelpSection>
+        <HelpSection title="Tier 4 〔9%〕 超レアフロア">
+          <Bullet>ワープホール、神々の競売場、ダイヤモンド採掘場が中心です。</Bullet>
+          <Bullet>一気に階数や資産を動かせる強力なイベントが揃っています。</Bullet>
+        </HelpSection>
+        <HelpSection title="Tier 5 〔1%〕 伝説フロア">
+          <Bullet>「究極のルーレット」または「神の故郷」が出現します。</Bullet>
+          <Bullet>最高クラスの恩恵や、大逆転級の展開が期待できる特別な階層です。</Bullet>
+        </HelpSection>
+        <HelpSection title="補足：扉と分岐の部屋">
+          <Bullet>2つの扉の部屋では、毎回6種類の扉の中からランダムで2種類だけ出現します。</Bullet>
+          <Bullet>扉の種類によって、運気系・健康系・採掘系・高Tier確定など進める先が変わります。</Bullet>
+        </HelpSection>
+      </InfoModal>
+      <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">
+        <HelpSection title="消費アイテム">
+          <Bullet><b>乱反射の鏡★n</b>：次にボタンを押した時の上昇階数を <b>n倍</b> にします。大きな上振れを狙う切り札です。</Bullet>
+          <Bullet><b>幸運の指輪★n</b>：3ターンの間、運気が <b>+n</b> 上がります。中長期の安定強化向きです。</Bullet>
+          <Bullet><b>賢者の宝石</b>：現在階の1の位ぶんだけ運気を上げます。高い1の位で使うと効率的です。</Bullet>
+          <Bullet><b>お店チケット</b>：次の部屋を確実にショップ系にします。宝石を売りたい時にも便利です。</Bullet>
+          <Bullet><b>パーティーセット</b>：次回のボタン演出が良い結果になりやすくなります。</Bullet>
+        </HelpSection>
+        <HelpSection title="常時効果アイテム">
+          <Bullet><b>お金のなる木★n</b>：ボタンを押すたびに所持金が <b>+200×n円</b> 増えます。</Bullet>
+          <Bullet><b>幸せのお守り★n</b>：ボタンを押すたびに運気が <b>+n</b> 増えます。</Bullet>
+          <Bullet>どちらも持っているだけで発動するので、長期戦ほど強いアイテムです。</Bullet>
+        </HelpSection>
+        <HelpSection title="宝石アイテム">
+          <Bullet><b>ルビー</b>：ショップで1個 <b>300円</b> で売却できます。</Bullet>
+          <Bullet><b>エメラルド</b>：ショップで1個 <b>500円</b> で売却できます。</Bullet>
+          <Bullet><b>ダイヤモンド</b>：ショップで1個 <b>1000円</b> で売却できます。</Bullet>
+          <Bullet>宝石は採掘場やミステリーオークションで入手し、ショップ系の部屋に来た時だけ売れます。</Bullet>
+        </HelpSection>
+        <HelpSection title="持ち物のコツ">
+          <Bullet>枠は3つしかないため、「即効性のある消費アイテム」と「長期で効く常時アイテム」のバランスが大切です。</Bullet>
+          <Bullet>宝石を多く抱えた時は、お店チケットで売却タイミングを作ると整理しやすくなります。</Bullet>
+        </HelpSection>
+      </InfoModal>
       <Modal isOpen={rank.isOpen} onClose={rank.onClose} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#15181c,#07080a)" maxW="340px" border="1px solid rgba(218,216,208,.28)" borderRadius="2px" boxShadow="0 24px 80px rgba(0,0,0,.72)"><ModalHeader fontFamily="heading" letterSpacing=".08em" color="#eee9df" borderBottom="1px solid rgba(180,184,186,.16)">全国ランキング (Top 50)</ModalHeader><ModalBody maxH="55vh" overflowY="auto"><Text mb={2} fontSize="10px" color={rankingStatus==='online'?'#9ab39e':rankingStatus==='connecting'?'#c7b58e':'#b57d7d'}>{rankingStatus==='online'?'● Firebaseランキング接続中':rankingStatus==='connecting'?'Firebaseへ接続中…':rankingStatus==='offline'?'ローカルランキングモード':'Firebase接続エラー'}</Text>{rankings.length?rankings.map((r,i)=><Flex key={r.id||i} py={1.5} borderBottom="1px solid" borderColor="rgba(200,202,200,.12)"><Text w="30px" color="#9b4148">#{i+1}</Text><Text flex="1" noOfLines={1} color="#dfdcd4">{r.name}</Text><Text color="#d7d1c3">{r.score}階</Text></Flex>):<Text color="gray.500">まだ登録がありません</Text>}</ModalBody><ModalFooter><Button w="100%" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" borderRadius="2px" _hover={{bg:'#351419'}} onClick={rank.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
       <Modal isOpen={pendingOverflow!==null} onClose={()=>{}} closeOnOverlayClick={false} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#15181c,#07080a)" maxW="350px" border="1px solid rgba(218,216,208,.28)" borderRadius="2px"><ModalHeader fontFamily="heading" color="#eee9df" borderBottom="1px solid rgba(180,184,186,.16)">持ち物がいっぱいです</ModalHeader><ModalBody><Text fontSize="xs" color="gray.300" mb={3}>新しく「{pendingOverflow?.name}」を入手しました。4つのうち捨てる1つを選んでください。</Text><Stack spacing={2}>{[...s.items,...(pendingOverflow?[pendingOverflow]:[])].map((it,i)=>{const pal=itemPalette(it);return <Button key={`${it.id}-${i}`} h="54px" justifyContent="flex-start" bg={pal.bg} color={pal.text} border="1px solid" borderColor={pal.border} _hover={{filter:'brightness(1.15)'}} onClick={()=>resolveOverflow(i)}><HStack w="100%"><Icon as={it.icon||FaGift} color={pal.icon}/><Box flex="1" textAlign="left"><Text fontSize="11px" fontWeight="900">{it.name}{it.type==='gem'?` ×${it.count||1}`:''}</Text><Text fontSize="9px" color="whiteAlpha.700">{i===3?'新しく入手したアイテム':'現在の持ち物'}</Text></Box><Text fontSize="10px" color="red.200" fontWeight="900">これを捨てる</Text></HStack></Button>})}</Stack></ModalBody></ModalContent></Modal>
       <Modal isOpen={selected!==null} onClose={()=>setSelected(null)} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#15181c,#07080a)" maxW="330px" border="1px solid rgba(218,216,208,.28)" borderRadius="2px"><ModalHeader fontFamily="heading" color="#eee9df" borderBottom="1px solid rgba(180,184,186,.16)"><HStack><Center w="36px" h="36px" rounded="lg" bg="gray.700"><Icon as={selectedItem?.icon||FaGift} color={selectedItem?itemPalette(selectedItem).icon:'gray.200'}/></Center><Text>{selectedItem?.name}</Text></HStack></ModalHeader><ModalBody><Text fontSize="sm" color="gray.100">{selectedItem?.desc}</Text></ModalBody><ModalFooter gap={2}>{selectedItem?.type==='consumable'&&<Button colorScheme="green" onClick={()=>useItem(selected!)}>使用する</Button>}{selectedItem?.type==='gem'&&room.kind==='shop'&&<Button colorScheme="yellow" onClick={()=>sellGem(selected!)}>売却 +{(selectedItem.price*(selectedItem.count||1))}円</Button>}{selectedItem?.type==='gem'&&room.kind!=='shop'&&<Text fontSize="xs" color="gray.400" alignSelf="center">宝石はショップ系の部屋でのみ売却できます</Text>}<Button colorScheme="red" variant="outline" onClick={()=>discard(selected!)}>捨てる</Button><Button onClick={()=>setSelected(null)}>閉じる</Button></ModalFooter></ModalContent></Modal>
@@ -805,4 +889,7 @@ export default function InfiniteElevator(){
 }
 
 function Action({title,sub,onClick}:{title:string;sub?:string;onClick:()=>void}){return <Button h="auto" minH="52px" py={2.5} px={3} bg="linear-gradient(180deg,rgba(31,34,38,.94),rgba(7,8,10,.96))" color="#eeeae1" border="1px solid" borderColor="rgba(205,207,205,.28)" borderRadius="2px" boxShadow="inset 0 1px rgba(255,255,255,.04),0 5px 14px rgba(0,0,0,.42)" _hover={{bg:'linear-gradient(180deg,#3c171b,#13090b)',color:'white',borderColor:'#9d454c'}} _active={{bg:'#13080a',color:'white',transform:'translateY(1px)'}} _focusVisible={{boxShadow:'0 0 0 2px rgba(174,72,79,.52)'}} onClick={onClick}><VStack spacing={0.5} w="100%"><Text fontFamily="heading" fontSize="sm" letterSpacing=".05em" lineHeight="1.25" fontWeight="800" color="#f0ede5" textShadow="0 2px 4px #000">{title}</Text>{sub&&<Text fontSize="10px" lineHeight="1.3" color="rgba(228,226,218,.68)" fontWeight="600">{sub}</Text>}</VStack></Button>}
-function InfoModal({ctl,title,color,children}:{ctl:ReturnType<typeof useDisclosure>;title:string;color:string;children:React.ReactNode}){return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#14171b,#07080a)" maxW="340px" border="1px solid" borderColor="rgba(218,216,208,.30)" borderRadius="2px" boxShadow="0 24px 80px rgba(0,0,0,.72)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".09em" borderBottom="1px solid rgba(170,174,176,.16)">{title}</ModalHeader><ModalBody><Stack fontSize="xs" color="rgba(230,228,220,.72)" lineHeight="1.8" spacing={3}>{children}</Stack></ModalBody><ModalFooter><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>}
+function InfoModal({ctl,title,color,children}:{ctl:ReturnType<typeof useDisclosure>;title:string;color:string;children:React.ReactNode}){return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#14171b,#07080a)" maxW="360px" border="1px solid" borderColor="rgba(218,216,208,.30)" borderRadius="2px" boxShadow="0 24px 80px rgba(0,0,0,.72)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".09em" borderBottom="1px solid rgba(170,174,176,.16)">{title}</ModalHeader><ModalBody maxH="68vh" overflowY="auto"><Stack fontSize="xs" color="rgba(230,228,220,.72)" lineHeight="1.8" spacing={3}>{children}</Stack></ModalBody><ModalFooter><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>}
+
+function HelpSection({title,children}:{title:string;children:React.ReactNode}){return <Box bg="rgba(255,255,255,.03)" border="1px solid rgba(205,207,205,.12)" borderRadius="3px" px={3} py={2.5}><Text mb={2} fontFamily="heading" fontSize="sm" color="#eee9df" letterSpacing=".05em">{title}</Text><Stack spacing={1.5}>{children}</Stack></Box>}
+function Bullet({children}:{children:React.ReactNode}){return <HStack align="start" spacing={2}><Text mt="1px" color="#b8565c" fontWeight="900">•</Text><Text flex="1">{children}</Text></HStack>}
