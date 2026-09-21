@@ -107,6 +107,9 @@ export default function InfiniteElevator(){
   const [shop,setShop]=useState<{item:Item,sold:boolean}[]>([]); const [bj,setBj]=useState<{playing:boolean,bet:number,p:number[],d:number[]}>({playing:false,bet:100,p:[],d:[]});
   const [forgeUsed,setForgeUsed]=useState(false);
   const [fortuneReading,setFortuneReading]=useState(false);
+  const [boxRewards,setBoxRewards]=useState<{type:'money'|'luck'|'turn',value:number}[]>([]);
+  const [boxSelected,setBoxSelected]=useState<number|null>(null);
+  const [boxRevealAll,setBoxRevealAll]=useState(false);
   const [slotBet,setSlotBet]=useState(20); const [slot,setSlot]=useState(['❔','❔','❔']); const [slotSpinning,setSlotSpinning]=useState(false);
   const [slotWin,setSlotWin]=useState(false); const [slotMessage,setSlotMessage]=useState('');
   const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure();
@@ -134,7 +137,15 @@ export default function InfiniteElevator(){
       else if(t==='SHOP_SMALL')setupShop(tier,1);
       else if(t==='TREASURE'){const g=ri(300,900);patch({money:s.money+g});show({tier,title:'小さな宝箱',desc:'古びた宝箱を見つけた。',result:`+${g}円`,resultType:'gold'});}
       else if(t==='FORTUNE'){setFortuneReading(false);show({tier,title:'占い師の小部屋',desc:'ミステリアスな占い師が水晶越しにあなたの運勢を見つめている。',result:'占ってもらおう',kind:'fortune'});}
-      else if(t==='BOXES')show({tier,title:'3つの怪しい小箱',desc:'直感でどれか1つを選ぼう。',result:'箱を選択',kind:'boxes'});
+      else if(t==='BOXES'){
+        const rewards=[
+          {type:'money' as const,value:ri(300,699)},
+          {type:'luck' as const,value:ri(2,4)},
+          {type:'turn' as const,value:1}
+        ].sort(()=>Math.random()-.5);
+        setBoxRewards(rewards);setBoxSelected(null);setBoxRevealAll(false);
+        show({tier,title:'3つの怪しい小箱',desc:'直感でどれか1つを選ぼう。選んだ後、残りの箱の中身も公開される。',result:'箱を選択',kind:'boxes'});
+      }
       else if(t==='BARTER')show({tier,title:'怪しい物々交換所',desc:'行商人がいる。手持ちのリソースを何度でも交換できる。',result:'交換選択',kind:'barter'});
       else show({tier,title:'運命の分岐路',desc:'道が2つに分かれている。',result:'道を選択',kind:'crossroads'});
     } else if(tier===2){const t=type||pick(['VENDING','SUPER_LUCKY','HEALTH_2','RUBY_MINING','STAIRS_MED','SHOP_MED','BLACKJACK','FORGE','ALTAR','MYSTERY_AUCTION']);
@@ -178,7 +189,28 @@ export default function InfiniteElevator(){
   const interactive=useMemo(()=>{
     const kind=room.kind;
     if(kind==='doors')return <SimpleGrid columns={2} spacing={2}><Action title="軋んだ扉" sub="ティア1確定" onClick={()=>executeRoom(1)}/><Action title="金の扉" sub="ティア4以上確定" onClick={()=>executeRoom(Math.random()<.8?4:5)}/></SimpleGrid>;
-    if(kind==='boxes')return <SimpleGrid columns={3} spacing={1.5}>{['赤','青','緑'].map((v,i)=><Action key={v} title={v} onClick={()=>{playSfx('item',soundOn);const r=ri(0,2); if(r===0)patch({money:s.money+ri(300,699)});else if(r===1)patch({luck:s.luck+ri(2,4)});else patch({turnsLeft:s.turnsLeft+1});show({...room,kind:undefined,result:r===0?'お金ゲット！':r===1?'運気アップ！':'回数+1',resultType:'success'});}}/>)}</SimpleGrid>;
+    if(kind==='boxes'){
+      const names=['赤','青','緑'];
+      const rewardText=(r:{type:'money'|'luck'|'turn',value:number})=>r.type==='money'?`${r.value}円`:r.type==='luck'?`運気 +${r.value}`:`回数 +${r.value}`;
+      const rewardIcon=(r:{type:'money'|'luck'|'turn',value:number})=>r.type==='money'?'💰':r.type==='luck'?'🍀':'⚡';
+      return <Stack spacing={2}>
+        <SimpleGrid columns={3} spacing={1.5}>{names.map((v,i)=>{
+          const reward=boxRewards[i]; const selectedNow=boxSelected===i; const visible=boxSelected===null||selectedNow||boxRevealAll;
+          return <Button key={v} minH="76px" h="auto" py={2} px={1.5} bg={selectedNow?'cyan.900':visible&&boxSelected!==null?'gray.700':'gray.800'} color="white" border="2px solid" borderColor={selectedNow?'cyan.300':boxRevealAll?'whiteAlpha.400':'whiteAlpha.200'} isDisabled={boxSelected!==null} opacity={boxSelected!==null&&!visible ? .55 : 1} onClick={()=>{
+            if(boxSelected!==null||!reward)return;
+            playSfx(reward.type==='money'?'coin':'success',soundOn);
+            setBoxSelected(i);
+            if(reward.type==='money')patch({money:s.money+reward.value}); else if(reward.type==='luck')patch({luck:s.luck+reward.value}); else patch({turnsLeft:s.turnsLeft+reward.value});
+            const msg=`${v}の箱：${rewardText(reward)}！`;
+            show({...room,result:msg,resultType:reward.type==='money'?'gold':'success'});
+            setTimeout(()=>{setBoxRevealAll(true);playSfx('item',soundOn);},900);
+          }}>
+            <VStack spacing={1}><Text fontWeight="900" fontSize="xs">{v}の箱</Text>{boxSelected===null?<><Text fontSize="xl">📦</Text><Text fontSize="9px" color="gray.300">選ぶ</Text></>:visible&&reward?<><Text fontSize="xl">{rewardIcon(reward)}</Text><Text fontSize="10px" fontWeight="900" color={selectedNow?'cyan.100':'white'}>{rewardText(reward)}</Text>{selectedNow&&<Badge colorScheme="cyan" fontSize="8px">選択</Badge>}</>:<><Text fontSize="xl">📦</Text><Text fontSize="9px" color="gray.400">？？？</Text></>}</VStack>
+          </Button>})}</SimpleGrid>
+        {boxSelected!==null&&!boxRevealAll&&<Text textAlign="center" fontSize="10px" color="gray.300">残りの箱を開封しています…</Text>}
+        {boxRevealAll&&<Text textAlign="center" fontSize="10px" color="cyan.200" fontWeight="bold">すべての箱の中身を公開しました</Text>}
+      </Stack>;
+    }
     if(kind==='crossroads')return <SimpleGrid columns={2} spacing={2}><Action title="平坦路" sub="確実に+300円" onClick={()=>{playSfx('coin',soundOn);patch({money:s.money+300});show({...room,kind:undefined,result:'+300円',resultType:'success'})}}/><Action title="茨の道" sub="1500円 or -500円" onClick={()=>{const win=Math.random()<.5;playSfx(win?'success':'fail',soundOn);patch({money:Math.max(0,s.money+(win?1500:-500))});show({...room,kind:undefined,result:win?'+1500円':'-500円',resultType:win?'gold':'danger'})}}/></SimpleGrid>;
     if(kind==='barter')return <Stack spacing={1.5}><Action title="運気2 ⇆ 300円" onClick={()=>{if(s.luck>=2){playSfx('coin',soundOn);patch({luck:s.luck-2,money:s.money+300});}else playSfx('fail',soundOn);}}/><Action title="300円 ⇆ 回数+1" onClick={()=>{if(s.money>=300){playSfx('success',soundOn);patch({money:s.money-300,turnsLeft:s.turnsLeft+1});}else playSfx('fail',soundOn);}}/></Stack>;
     if(kind==='vending')return <SimpleGrid columns={2} spacing={2}><Action title="運気ドリンク" sub="200円 (50%で+1)" onClick={()=>{if(s.money<200){playSfx('fail',soundOn);return;}playSfx('buy',soundOn);patch({money:s.money-200,luck:s.luck+(Math.random()<.5?1:0)})}}/><Action title="回数ドリンク" sub="400円 (50%で+1)" onClick={()=>{if(s.money<400){playSfx('fail',soundOn);return;}playSfx('buy',soundOn);patch({money:s.money-400,turnsLeft:s.turnsLeft+(Math.random()<.5?1:0)})}}/></SimpleGrid>;
@@ -225,7 +257,7 @@ export default function InfiniteElevator(){
     if(kind==='hell')return <Button w="100%" colorScheme="red" onClick={()=>{if(s.turnsLeft<=0)return;playSfx('hell',soundOn);const roll=ri(1,6);patch({turnsLeft:s.turnsLeft-1});if(roll===5){playSfx('success',soundOn);patch({inHell:false});show({tier:1,title:'地獄から生還',desc:'5が出た！元の世界へ戻った。',result:'生還！',resultType:'success'});}else if(s.turnsLeft-1<=0)end();else {playSfx('fail',soundOn);show({...room,result:`${roll}が出た... 脱出失敗`,resultType:'danger'});}}}>サイコロを振る (回数-1)</Button>;
     return null;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[room,s,rocks,picks,shop,bj,slotBet,slot,slotSpinning,slotWin,slotMessage,soundOn,forgeUsed,fortuneReading]);
+  },[room,s,rocks,picks,shop,bj,slotBet,slot,slotSpinning,slotWin,slotMessage,soundOn,forgeUsed,fortuneReading,boxRewards,boxSelected,boxRevealAll]);
 
   const selectedItem=selected===null?null:s.items[selected];
   const resultColor=room.resultType==='success'?'green':room.resultType==='danger'?'red':room.resultType==='gold'?'yellow':'gray';
