@@ -87,7 +87,7 @@ let bgmTier=1;
 let bgmStep=0;
 let bgmMaster:GainNode|null=null;
 const MENU_MUSIC_VOLUME=.58;
-const IN_GAME_BGM_VOLUME=1.25;
+const IN_GAME_BGM_VOLUME=1.8;
 function stopBgm(){
   if(typeof window!=='undefined' && bgmTimer!==null) window.clearInterval(bgmTimer);
   bgmTimer=null; bgmMood=null; bgmTier=1; bgmStep=0;
@@ -770,9 +770,9 @@ export default function InfiniteElevator(){
 
         <Flex mt="auto" px={{base:4,md:5}} pb={{base:4,md:5}}>
           <Box w="100%" bg="linear-gradient(180deg,rgba(8,9,11,.80),rgba(4,5,6,.94))" border="1px solid rgba(218,216,208,.24)" borderRadius="4px" boxShadow="0 24px 60px rgba(0,0,0,.55)" p={3} backdropFilter="blur(9px)">
-            <Text fontSize="10px" letterSpacing=".24em" color="rgba(235,232,222,.52)" fontWeight="900">ENDLESS ASCENT</Text>
-            <Text mt={1} fontSize="xs" lineHeight="1.8" color="rgba(235,232,222,.76)">巨大な昇降塔を、ただ上へ。ボタンを押すたびに階数と運命が大きく揺れるダーク運ゲー。</Text>
-            <Button mt={3} h="56px" bg="linear-gradient(180deg,#17191c,#090a0c)" color="#f1eee6" border="1px solid rgba(232,229,220,.46)" borderRadius="2px" fontFamily="heading" letterSpacing=".16em" fontSize="md" leftIcon={<FaPlay/>} boxShadow="inset 0 1px rgba(255,255,255,.06),0 10px 28px rgba(0,0,0,.55)" _hover={{bg:'linear-gradient(180deg,#3a171b,#12090b)',borderColor:'#b8565c',color:'white'}} _active={{transform:'translateY(1px)',bg:'#18090c'}} onClick={start}>ゲームを始める</Button>
+            <Center>
+              <Button w="100%" maxW="280px" h="56px" bg="linear-gradient(180deg,#17191c,#090a0c)" color="#f1eee6" border="1px solid rgba(232,229,220,.46)" borderRadius="2px" fontFamily="heading" letterSpacing=".16em" fontSize="md" leftIcon={<FaPlay/>} boxShadow="inset 0 1px rgba(255,255,255,.06),0 10px 28px rgba(0,0,0,.55)" _hover={{bg:'linear-gradient(180deg,#3a171b,#12090b)',borderColor:'#b8565c',color:'white'}} _active={{transform:'translateY(1px)',bg:'#18090c'}} onClick={start}>ゲームを始める</Button>
+            </Center>
             <SimpleGrid mt={2.5} columns={2} spacing={1.5}>{[[FaRankingStar,'ランキング',rank.onOpen],[FaCircleQuestion,'ルール説明',rules.onOpen],[FaBookOpen,'ステージ図鑑',guide.onOpen],[FaGem,'アイテム図鑑',itemGuide.onOpen]].map(([ic,label,fn]:any)=><Button key={label} size="sm" minH="42px" bg="rgba(7,8,10,.78)" color="rgba(237,234,225,.84)" border="1px solid rgba(180,184,186,.24)" borderRadius="2px" leftIcon={<Icon as={ic}/>} fontFamily="heading" fontSize="11px" letterSpacing=".08em" _hover={{bg:'rgba(54,18,22,.88)',borderColor:'rgba(174,66,74,.75)',color:'white'}} onClick={fn}>{label}</Button>)}</SimpleGrid>
           </Box>
         </Flex>
