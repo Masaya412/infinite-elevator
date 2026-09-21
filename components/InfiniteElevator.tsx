@@ -97,28 +97,142 @@ function startBgm(mood:BgmMood, enabled=true){
     const ctx=audioContext; if(ctx.state==='suspended') void ctx.resume();
     if(bgmMood===mood && bgmTimer!==null)return;
     stopBgm(); bgmMood=mood;
-    const patterns:Record<BgmMood,{notes:number[],bass:number[],ms:number,type:OscillatorType}>={
-      tier1:{notes:[523,659,784,659,587,659,523,440],bass:[131,175,196,175],ms:310,type:'square'},
-      tier2:{notes:[587,698,880,784,698,587,523,587],bass:[147,196,220,196],ms:280,type:'triangle'},
-      tier3:{notes:[659,784,988,880,784,1047,988,784],bass:[165,220,247,220],ms:250,type:'square'},
-      tier4:{notes:[698,831,1047,1245,1047,831,1397,1047],bass:[175,208,262,208],ms:220,type:'sawtooth'},
-      tier5:{notes:[784,988,1175,1568,1760,1568,1319,1976,1568,1175,988,1319],bass:[196,247,294,392],ms:185,type:'triangle'},
-      god:{notes:[523,659,784,1047,1319,1568,2093,1568,1319,1047,784,988,1175,1568,1976,2349],bass:[131,196,262,392],ms:240,type:'sine'},
-      casino:{notes:[659,784,988,784,1047,988,784,659],bass:[165,165,196,220],ms:185,type:'square'},
-      blackjack:{notes:[392,466,523,587,523,466,440,392],bass:[98,117,131,117],ms:340,type:'triangle'},
-      hell:{notes:[110,117,104,98,110,92,87,98],bass:[55,49,46,41],ms:390,type:'sawtooth'},
-      mystic:{notes:[523,622,784,932,784,622,698,523],bass:[131,156,196,156],ms:330,type:'sine'}
+
+    type MoodCfg={
+      chords:number[][]; bass:number[]; melody:number[]; ms:number;
+      padType:OscillatorType; leadType:OscillatorType;
+      padVol:number; bassVol:number; leadVol:number;
+      cutoff:number; detune:number; shimmer?:boolean; tension?:boolean;
     };
-    const pat=patterns[mood];
+    const cfgs:Record<BgmMood,MoodCfg>={
+      // 静かなロビー。柔らかいコードと控えめなベル。
+      tier1:{
+        chords:[[261.63,329.63,392],[220,277.18,329.63],[174.61,220,261.63],[196,246.94,293.66]],
+        bass:[65.41,55,43.65,49], melody:[523.25,493.88,440,392,440,493.88,392,329.63], ms:1180,
+        padType:'sine',leadType:'triangle',padVol:.018,bassVol:.018,leadVol:.012,cutoff:1350,detune:7
+      },
+      // 少し推進感。冒険っぽい広がり。
+      tier2:{
+        chords:[[293.66,349.23,440],[261.63,329.63,392],[220,293.66,349.23],[246.94,293.66,369.99]],
+        bass:[73.42,65.41,55,61.74], melody:[587.33,698.46,659.25,523.25,587.33,783.99,698.46,587.33], ms:980,
+        padType:'triangle',leadType:'sine',padVol:.020,bassVol:.020,leadVol:.014,cutoff:1700,detune:9
+      },
+      // 神秘感。浮遊する短三和音と余韻の長い旋律。
+      tier3:{
+        chords:[[329.63,392,493.88],[293.66,369.99,440],[261.63,329.63,415.3],[293.66,349.23,440]],
+        bass:[82.41,73.42,65.41,73.42], melody:[659.25,783.99,987.77,880,783.99,659.25,739.99,587.33], ms:1120,
+        padType:'sine',leadType:'sine',padVol:.023,bassVol:.020,leadVol:.014,cutoff:1550,detune:12,shimmer:true
+      },
+      // 重厚・緊張感。低いドローンと広いコード。
+      tier4:{
+        chords:[[174.61,207.65,261.63],[196,246.94,293.66],[164.81,207.65,246.94],[146.83,196,233.08]],
+        bass:[43.65,49,41.2,36.71], melody:[349.23,392,466.16,523.25,466.16,392,349.23,293.66], ms:920,
+        padType:'sawtooth',leadType:'triangle',padVol:.017,bassVol:.026,leadVol:.011,cutoff:780,detune:5,tension:true
+      },
+      // 荘厳。オルガンのような持続音と鐘。
+      tier5:{
+        chords:[[261.63,392,523.25],[293.66,440,587.33],[329.63,493.88,659.25],[392,523.25,783.99]],
+        bass:[65.41,73.42,82.41,98], melody:[783.99,987.77,1174.66,1046.5,1318.51,1174.66,987.77,1567.98], ms:1320,
+        padType:'sine',leadType:'sine',padVol:.027,bassVol:.022,leadVol:.016,cutoff:2100,detune:13,shimmer:true
+      },
+      // 神の故郷。聖歌・鐘・高音の倍音をイメージ。
+      god:{
+        chords:[[261.63,329.63,392,523.25],[349.23,440,523.25,698.46],[392,493.88,587.33,783.99],[329.63,415.3,493.88,659.25]],
+        bass:[65.41,87.31,98,82.41], melody:[1046.5,1318.51,1567.98,2093,1567.98,1318.51,1174.66,1567.98], ms:1480,
+        padType:'sine',leadType:'sine',padVol:.030,bassVol:.018,leadVol:.017,cutoff:2600,detune:15,shimmer:true
+      },
+      // カジノ。ウォーキングベース風＋柔らかいコード。
+      casino:{
+        chords:[[329.63,415.3,493.88],[349.23,440,523.25],[293.66,369.99,440],[311.13,392,466.16]],
+        bass:[82.41,98,110,123.47,98,82.41,73.42,77.78], melody:[659.25,783.99,739.99,659.25,587.33,698.46,783.99,880], ms:760,
+        padType:'triangle',leadType:'sine',padVol:.017,bassVol:.023,leadVol:.012,cutoff:1800,detune:6
+      },
+      // 地下カードサロン。暗めのラウンジ風。
+      blackjack:{
+        chords:[[196,233.08,293.66],[174.61,220,261.63],[220,261.63,329.63],[196,246.94,293.66]],
+        bass:[49,43.65,55,49], melody:[392,466.16,440,349.23,392,523.25,466.16,392], ms:1280,
+        padType:'triangle',leadType:'sine',padVol:.018,bassVol:.020,leadVol:.010,cutoff:1100,detune:8
+      },
+      // 地獄。旋律ではなく低いドローン中心。
+      hell:{
+        chords:[[55,82.41,110],[49,73.42,98],[46.25,69.3,92.5],[41.2,61.74,82.41]],
+        bass:[27.5,24.5,23.12,20.6], melody:[110,103.83,92.5,98,87.31,82.41,92.5,73.42], ms:1550,
+        padType:'sawtooth',leadType:'sine',padVol:.018,bassVol:.030,leadVol:.006,cutoff:420,detune:3,tension:true
+      },
+      // 占い・祭壇。透明感のあるアンビエント。
+      mystic:{
+        chords:[[261.63,311.13,392],[293.66,349.23,440],[246.94,293.66,369.99],[277.18,329.63,415.3]],
+        bass:[65.41,73.42,61.74,69.3], melody:[783.99,932.33,1046.5,1244.51,1046.5,932.33,830.61,698.46], ms:1380,
+        padType:'sine',leadType:'sine',padVol:.022,bassVol:.014,leadVol:.013,cutoff:1900,detune:16,shimmer:true
+      }
+    };
+    const c=cfgs[mood];
+
+    const connectToDestination=(node:AudioNode, cutoff:number, volume:number)=>{
+      const filter=ctx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=cutoff; filter.Q.value=.45;
+      const gain=ctx.createGain(); gain.gain.value=volume;
+      node.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      return gain;
+    };
+    const sustainedTone=(freq:number,when:number,dur:number,type:OscillatorType,vol:number,detune=0,cutoff=c.cutoff)=>{
+      const o=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter();
+      o.type=type; o.frequency.value=freq; o.detune.value=detune;
+      f.type='lowpass'; f.frequency.value=cutoff; f.Q.value=.35;
+      g.gain.setValueAtTime(.0001,when);
+      g.gain.linearRampToValueAtTime(vol,when+.22);
+      g.gain.setValueAtTime(vol,Math.max(when+.24,when+dur-.38));
+      g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+      o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+dur+.05);
+    };
+    const padChord=(notes:number[],when:number,dur:number)=>{
+      notes.forEach((n,i)=>{
+        sustainedTone(n,when,dur,c.padType,c.padVol,c.detune*(i-1));
+        // デチューンした2本目で厚みを出す
+        sustainedTone(n,when+.01,dur,c.padType,c.padVol*.44,-c.detune*(i+1),c.cutoff*.92);
+      });
+    };
+    const bass=(freq:number,when:number,dur:number)=>{
+      sustainedTone(freq,when,dur,'sine',c.bassVol,0,Math.min(520,c.cutoff));
+      if(mood==='tier4'||mood==='hell') sustainedTone(freq/2,when,dur,'triangle',c.bassVol*.35,0,260);
+    };
+    const lead=(freq:number,when:number,dur:number)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();
+      o.type=c.leadType;o.frequency.value=freq;f.type='lowpass';f.frequency.value=Math.max(900,c.cutoff*1.15);f.Q.value=.25;
+      g.gain.setValueAtTime(.0001,when);g.gain.linearRampToValueAtTime(c.leadVol,when+.06);g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+      o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+dur+.05);
+    };
+    const bell=(freq:number,when:number)=>{
+      [1,2.01,3.98].forEach((mul,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*mul;
+        g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime((i===0?.012:.0045),when+.01);g.gain.exponentialRampToValueAtTime(.0001,when+1.6+i*.25);
+        o.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+2);
+      });
+    };
+    const breath=(when:number,dur:number,vol=.0025)=>{
+      const len=Math.max(1,Math.floor(ctx.sampleRate*dur));const b=ctx.createBuffer(1,len,ctx.sampleRate);const d=b.getChannelData(0);
+      for(let i=0;i<len;i++)d[i]=(Math.random()*2-1);
+      const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();src.buffer=b;f.type='lowpass';f.frequency.value=mood==='hell'?180:480;
+      g.gain.setValueAtTime(.0001,when);g.gain.linearRampToValueAtTime(vol,when+.25);g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+      src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(when);src.stop(when+dur+.05);
+    };
+
     const tick=()=>{
-      if(!audioContext||bgmMood!==mood)return; const now=audioContext.currentTime;
-      const o=audioContext.createOscillator(),g=audioContext.createGain(); o.type=pat.type; o.frequency.value=pat.notes[bgmStep%pat.notes.length];
-      g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(mood==='hell'?.012:mood==='god'?.026:mood==='tier5'?.023:.018,now+.015);g.gain.exponentialRampToValueAtTime(.0001,now+.15);o.connect(g);g.connect(audioContext.destination);o.start(now);o.stop(now+.17);
-      if((mood==='god'||mood==='tier5') && bgmStep%4===0){[2,3].forEach((mul,idx)=>{const h=audioContext!.createOscillator(),hg=audioContext!.createGain();h.type='sine';h.frequency.value=pat.notes[bgmStep%pat.notes.length]*mul;hg.gain.setValueAtTime(.0001,now);hg.gain.exponentialRampToValueAtTime(mood==='god'?.008:.005,now+.02);hg.gain.exponentialRampToValueAtTime(.0001,now+.28);h.connect(hg);hg.connect(audioContext!.destination);h.start(now+.02*idx);h.stop(now+.3);});}
-      if(bgmStep%2===0){const b=audioContext.createOscillator(),bg=audioContext.createGain();b.type='triangle';b.frequency.value=pat.bass[Math.floor(bgmStep/2)%pat.bass.length];bg.gain.setValueAtTime(.0001,now);bg.gain.exponentialRampToValueAtTime(.014,now+.01);bg.gain.exponentialRampToValueAtTime(.0001,now+.24);b.connect(bg);bg.connect(audioContext.destination);b.start(now);b.stop(now+.26);}
+      if(!audioContext||bgmMood!==mood)return;
+      const now=audioContext.currentTime+.02;
+      const chord=c.chords[bgmStep%c.chords.length];
+      const dur=Math.max(.9,(c.ms/1000)*1.55);
+      padChord(chord,now,dur);
+      bass(c.bass[bgmStep%c.bass.length],now,dur*.9);
+
+      // 旋律は毎回ではなく間を空けて鳴らし、ピコピコ感を抑える
+      if(bgmStep%2===0) lead(c.melody[bgmStep%c.melody.length],now+.28,Math.min(.9,dur*.72));
+      if(c.shimmer && bgmStep%4===0) bell(c.melody[(bgmStep+2)%c.melody.length],now+.42);
+      if(c.tension && bgmStep%3===0) breath(now,dur*.95,mood==='hell'?.0045:.0026);
+      if(mood==='casino' && bgmStep%2===1) lead(c.melody[(bgmStep+3)%c.melody.length],now+.46,.34);
+      if(mood==='god' && bgmStep%2===0) bell(c.melody[bgmStep%c.melody.length]/2,now+.12);
       bgmStep++;
     };
-    tick(); bgmTimer=window.setInterval(tick,pat.ms);
+    tick(); bgmTimer=window.setInterval(tick,c.ms);
   }catch{}
 }
 
