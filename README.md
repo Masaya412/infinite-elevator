@@ -75,3 +75,69 @@ GitHubのリポジトリで:
 ## v20 updates
 - 2つの扉は6候補から毎回ランダムで2種類のみ出現します。
 - 右上の ×1 / ×2 で演出速度を切り替えられます。ブラックジャック、スロット、占い、ルーレット、地獄などの待ち時間にも反映されます。
+
+## Firebase 全国ランキング設定
+
+この版は Firebase Authentication（匿名ログイン）+ Cloud Firestore のオンラインランキングに対応しています。Firebase設定が無い場合だけローカルランキングへフォールバックします。
+
+### 1. Firebaseプロジェクトを作る
+
+Firebase Console でプロジェクトを作成し、Webアプリを追加してください。表示された `firebaseConfig` の値を使います。
+
+### 2. Anonymous Authenticationを有効化
+
+Firebase Console → Authentication → Sign-in method → Anonymous を有効にします。
+
+### 3. Cloud Firestoreを作る
+
+Firebase Console → Firestore Database → データベースを作成します。本番運用ではルールを開放したままにしないでください。
+
+このプロジェクトの `firestore.rules` の内容を Firebase Console → Firestore Database → Rules に貼り付けて「公開」してください。
+
+ランキングデータは次のコレクションへ保存されます。
+
+```text
+rankings/{auto-document-id}
+```
+
+### 4. GitHub Actions Variablesを登録
+
+GitHubの対象リポジトリで
+
+`Settings → Secrets and variables → Actions → Variables → New repository variable`
+
+を開き、以下6つを登録します。
+
+```text
+NEXT_PUBLIC_FIREBASE_API_KEY
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+NEXT_PUBLIC_FIREBASE_PROJECT_ID
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+NEXT_PUBLIC_FIREBASE_APP_ID
+```
+
+値はFirebase Console → Project settings → Your apps → Web app の `firebaseConfig` からコピーします。
+
+登録後、mainへpushするとGitHub ActionsがFirebase設定込みでNext.jsをビルドします。
+
+### 5. ローカルで確認する場合
+
+`.env.example` を `.env.local` にコピーしてFirebaseの値を入れます。
+
+```bash
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+`.env.local` は `.gitignore` 対象なのでGitHubへコミットしないでください。
+
+### ランキング仕様
+
+- Top 50をスコア（到達階）降順でリアルタイム表示
+- ゲーム終了画面からニックネームとスコアを登録
+- 匿名Firebase Authenticationで書き込みユーザーを識別
+- 読み取りは公開、追加は認証済みユーザーのみ
+- ランキングの更新・削除はクライアントから禁止
+- Firebase未設定時はlocalStorageランキングへフォールバック

@@ -12,6 +12,8 @@ import {
   FaTicket, FaTree, FaTrophy, FaVolumeHigh, FaVolumeXmark
 } from 'react-icons/fa6';
 import type { Item, ItemId, Room, State } from '../lib/types';
+import { firebaseReady } from '../lib/firebase';
+import { ensureAnonymousUser, submitRanking, subscribeTopRankings, type RankingEntry } from '../lib/leaderboard';
 
 const tierMeta = [
   {name:'Tier 1 Common', bg:'radial-gradient(circle at center, rgba(14,165,233,.15), rgba(15,23,42,.95))', color:'cyan.300'},
@@ -160,7 +162,7 @@ export default function InfiniteElevator(){
   const [room,setRoom]=useState<Room>({tier:1,title:'エレベーターホール',desc:'ボタンを押して上の階を目指しましょう！'});
   const [overlay,setOverlay]=useState<{show:boolean,tier:number,steps:number,detail:string,locked:boolean}>({show:false,tier:1,steps:0,detail:'',locked:false});
   const [selected,setSelected]=useState<number|null>(null); const [gameover,setGameover]=useState(false); const [nickname,setNickname]=useState('');
-  const [rankings,setRankings]=useState<any[]>([]); const [forcedShop,setForcedShop]=useState(false); const [soundOn,setSoundOn]=useState(true);
+  const [rankings,setRankings]=useState<RankingEntry[]>([]); const [rankingStatus,setRankingStatus]=useState<'connecting'|'online'|'offline'|'error'>(firebaseReady?'connecting':'offline'); const [scoreSubmitted,setScoreSubmitted]=useState(false); const [forcedShop,setForcedShop]=useState(false); const [soundOn,setSoundOn]=useState(true);
   const [rocks,setRocks]=useState<{gem:ItemId|null,count:number,open:boolean}[]>([]); const [picks,setPicks]=useState(0);
   const [shop,setShop]=useState<{item:Item,sold:boolean}[]>([]); const [bj,setBj]=useState<{playing:boolean,bet:number,p:number[],d:number[]}>({playing:false,bet:100,p:[],d:[]});
   const [forgeUsed,setForgeUsed]=useState(false);
@@ -184,7 +186,26 @@ export default function InfiniteElevator(){
   const fastInterval=(fn:()=>void,ms:number)=>window.setInterval(fn,ms/gameSpeed);
   const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure();
 
-  useEffect(()=>{ const h=Number(localStorage.getItem('infinite_elevator_highscore')||'1'); const n=localStorage.getItem('infinite_elevator_nickname')||''; const r=JSON.parse(localStorage.getItem('infinite_elevator_local_rankings')||'[]'); setS(x=>({...x,highScore:Math.max(1,h)})); setNickname(n); setRankings(r); },[]);
+  useEffect(()=>{
+    const h=Number(localStorage.getItem('infinite_elevator_highscore')||'1');
+    const n=localStorage.getItem('infinite_elevator_nickname')||'';
+    setS(x=>({...x,highScore:Math.max(1,h)}));
+    setNickname(n);
+    if(!firebaseReady){
+      const r=JSON.parse(localStorage.getItem('infinite_elevator_local_rankings')||'[]');
+      setRankings(r);
+      setRankingStatus('offline');
+      return;
+    }
+    let unsub=()=>{};
+    ensureAnonymousUser()
+      .then(()=>{
+        setRankingStatus('online');
+        unsub=subscribeTopRankings(rows=>{setRankings(rows);setRankingStatus('online');},()=>setRankingStatus('error'));
+      })
+      .catch(()=>setRankingStatus('error'));
+    return ()=>unsub();
+  },[]);
   useEffect(()=>{
     if(menu||gameover){stopBgm();return;}
     let mood:BgmMood=`tier${Math.min(5,Math.max(1,room.tier))}` as BgmMood;
@@ -200,7 +221,7 @@ export default function InfiniteElevator(){
   const addItem=(item:Item)=>setS(x=>{ const items=[...x.items]; if(item.type==='gem'){const i=items.findIndex(v=>v.id===item.id); if(i>=0){items[i]={...items[i],count:(items[i].count||1)+(item.count||1)}; return {...x,items,logs:[`「${item.name}」を入手！`,...x.logs]};}} if(items.length<3) items.push(item); else items[2]=item; return {...x,items,logs:[`アイテム「${item.name}」を入手！`,...x.logs]};});
   const show=(r:Room)=>setRoom(r);
 
-  const start=()=>{playSfx('start',soundOn);setForgeUsed(false);setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
+  const start=()=>{playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
   const end=()=>{playSfx('gameover',soundOn);setGameover(true); setS(x=>{const h=Math.max(x.highScore,x.floor); localStorage.setItem('infinite_elevator_highscore',String(h)); return {...x,highScore:h};});};
 
   const triggerRoom=(forcedTier?:number,forcedType?:string)=>{
@@ -288,7 +309,29 @@ export default function InfiniteElevator(){
   const sellGem=(i:number)=>{const item=s.items[i];if(item?.type!=='gem'||room.kind!=='shop'){playSfx('fail',soundOn);return;}playSfx('sell',soundOn);const total=item.price*(item.count||1);setS(x=>({...x,money:x.money+total,items:x.items.filter((_,j)=>j!==i)}));setSelected(null);};
   const discard=(i:number)=>{playSfx('discard',soundOn);setS(x=>({...x,items:x.items.filter((_,j)=>j!==i)}));setSelected(null);};
 
-  const submitScore=()=>{playSfx('success',soundOn);const name=nickname.trim()||'名無しの登山者';const all=[...rankings,{name,score:s.floor,floor:s.floor,money:s.money,luck:s.luck,date:new Date().toLocaleDateString()}].sort((a,b)=>b.score-a.score).slice(0,50);setRankings(all);localStorage.setItem('infinite_elevator_local_rankings',JSON.stringify(all));localStorage.setItem('infinite_elevator_nickname',name);};
+  const submitScore=async()=>{
+    if(scoreSubmitted)return;
+    const name=nickname.trim()||'名無しの登山者';
+    localStorage.setItem('infinite_elevator_nickname',name);
+    if(firebaseReady){
+      try{
+        await submitRanking({name,score:s.floor,floor:s.floor,money:s.money,luck:s.luck});
+        setScoreSubmitted(true);
+        playSfx('success',soundOn);
+        return;
+      }catch{
+        setRankingStatus('error');
+        playSfx('fail',soundOn);
+        return;
+      }
+    }
+    const local=JSON.parse(localStorage.getItem('infinite_elevator_local_rankings')||'[]');
+    const all=[...local,{name,score:s.floor,floor:s.floor,money:s.money,luck:s.luck}].sort((a:any,b:any)=>b.score-a.score).slice(0,50);
+    setRankings(all);
+    localStorage.setItem('infinite_elevator_local_rankings',JSON.stringify(all));
+    setScoreSubmitted(true);
+    playSfx('success',soundOn);
+  };
   const card=()=>Math.min(10,ri(1,10)); const hand=(a:number[])=>a.reduce((p,c)=>p+c,0);
   const warp=(d:number)=>{playSfx(d>=0?'warpUp':'warpDown',soundOn);patch({floor:Math.max(1,s.floor+d)});show({...room,kind:undefined,result:`${d>=0?'+':''}${d}階 ワープ！`,resultType:d>=0?'gold':'danger'});};
   const buyAuction=(item:Item)=>{if(s.money<500){playSfx('fail',soundOn);return;}playSfx('buy',soundOn);patch({money:s.money-500});addItem(item);show({...room,kind:undefined,result:`${item.name} 落札！`,resultType:'gold'});};
@@ -446,9 +489,9 @@ export default function InfiniteElevator(){
       <InfoModal ctl={rules} title="ルール説明" color="green"><Text>【基本ルール】ボタンを押すとランダムな階数分上へ進みます。全10回でどこまで登れるかを競います。</Text><Text>【運気】高いほど移動階数の補正ボーナスが大きくなります。</Text><Text>【ショップ＆宝石】採掘した宝石はショップで売却できます。</Text><Text>【カジノ】スロットで同じ絵柄が3つ揃うと高倍率配当です。</Text></InfoModal>
       <InfoModal ctl={guide} title="ステージガイド" color="cyan">{['Tier 1 (40%): 基本イベント・ショップ・宝箱など','Tier 2 (30%): ブラックジャック・自販機・ルビー採掘など','Tier 3 (20%): スロット・エメラルド採掘・アイテム箱など','Tier 4 (9%): ダイヤ採掘・ワープ・競売・タイムカプセル','Tier 5 (1%): 究極のルーレット・神の故郷'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
       <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">{['乱反射の鏡★n: 次の移動階数がn倍','幸運の指輪★n: 3ターン運気+n','賢者の宝石: 現在階の1の位だけ運気UP','お店チケット: 次の部屋がお店','パーティーセット: 次回好演出','お金のなる木 / 幸せのお守り: 毎ターン効果','宝石: ショップで売却'].map(x=><Text key={x}>{x}</Text>)}</InfoModal>
-      <Modal isOpen={rank.isOpen} onClose={rank.onClose} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px"><ModalHeader color="yellow.300">全国ランキング (Top 50)</ModalHeader><ModalBody maxH="55vh" overflowY="auto">{rankings.length?rankings.map((r,i)=><Flex key={i} py={1.5} borderBottom="1px solid" borderColor="whiteAlpha.100"><Text w="30px">#{i+1}</Text><Text flex="1">{r.name}</Text><Text color="cyan.300">{r.score}階</Text></Flex>):<Text color="gray.500">まだ登録がありません</Text>}</ModalBody><ModalFooter><Button onClick={rank.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
+      <Modal isOpen={rank.isOpen} onClose={rank.onClose} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px"><ModalHeader color="yellow.300">全国ランキング (Top 50)</ModalHeader><ModalBody maxH="55vh" overflowY="auto"><Text mb={2} fontSize="10px" color={rankingStatus==='online'?'green.300':rankingStatus==='connecting'?'yellow.300':'orange.300'}>{rankingStatus==='online'?'● Firebaseランキング接続中':rankingStatus==='connecting'?'Firebaseへ接続中…':rankingStatus==='offline'?'ローカルランキングモード':'Firebase接続エラー'}</Text>{rankings.length?rankings.map((r,i)=><Flex key={r.id||i} py={1.5} borderBottom="1px solid" borderColor="whiteAlpha.100"><Text w="30px">#{i+1}</Text><Text flex="1" noOfLines={1}>{r.name}</Text><Text color="cyan.300">{r.score}階</Text></Flex>):<Text color="gray.500">まだ登録がありません</Text>}</ModalBody><ModalFooter><Button onClick={rank.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
       <Modal isOpen={selected!==null} onClose={()=>setSelected(null)} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="330px"><ModalHeader color="white"><HStack><Center w="36px" h="36px" rounded="lg" bg="gray.700"><Icon as={selectedItem?.icon||FaGift} color={selectedItem?itemPalette(selectedItem).icon:'gray.200'}/></Center><Text>{selectedItem?.name}</Text></HStack></ModalHeader><ModalBody><Text fontSize="sm" color="gray.100">{selectedItem?.desc}</Text></ModalBody><ModalFooter gap={2}>{selectedItem?.type==='consumable'&&<Button colorScheme="green" onClick={()=>useItem(selected!)}>使用する</Button>}{selectedItem?.type==='gem'&&room.kind==='shop'&&<Button colorScheme="yellow" onClick={()=>sellGem(selected!)}>売却 +{(selectedItem.price*(selectedItem.count||1))}円</Button>}{selectedItem?.type==='gem'&&room.kind!=='shop'&&<Text fontSize="xs" color="gray.400" alignSelf="center">宝石はショップ系の部屋でのみ売却できます</Text>}<Button colorScheme="red" variant="outline" onClick={()=>discard(selected!)}>捨てる</Button><Button onClick={()=>setSelected(null)}>閉じる</Button></ModalFooter></ModalContent></Modal>
-      <Modal isOpen={gameover} onClose={()=>{}} closeOnOverlayClick={false} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px" textAlign="center"><ModalHeader>ゲーム終了</ModalHeader><ModalBody><Text fontSize="xs" color="gray.400">最終到達階数</Text><Text fontSize="4xl" color="cyan.300" fontFamily="mono" fontWeight="black">{s.floor} 階</Text><HStack mt={3}><Input value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="プレイヤー名" textAlign="center"/><Button colorScheme="yellow" onClick={submitScore}>登録</Button></HStack><HStack justify="space-between" mt={3} color="gray.400"><Text fontSize="xs">最終所持金: <b>{s.money}円</b></Text><Text fontSize="xs">最終運気: <b>{s.luck}</b></Text></HStack></ModalBody><ModalFooter><Button w="100%" colorScheme="cyan" onClick={()=>{setGameover(false);setMenu(true)}}>メインメニューへ</Button></ModalFooter></ModalContent></Modal>
+      <Modal isOpen={gameover} onClose={()=>{}} closeOnOverlayClick={false} isCentered><ModalOverlay/><ModalContent bg="gray.900" maxW="340px" textAlign="center"><ModalHeader>ゲーム終了</ModalHeader><ModalBody><Text fontSize="xs" color="gray.400">最終到達階数</Text><Text fontSize="4xl" color="cyan.300" fontFamily="mono" fontWeight="black">{s.floor} 階</Text><HStack mt={3}><Input value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="プレイヤー名" textAlign="center"/><Button colorScheme="yellow" onClick={submitScore} isDisabled={scoreSubmitted}>{scoreSubmitted?'登録済み':'登録'}</Button></HStack><HStack justify="space-between" mt={3} color="gray.400"><Text fontSize="xs">最終所持金: <b>{s.money}円</b></Text><Text fontSize="xs">最終運気: <b>{s.luck}</b></Text></HStack></ModalBody><ModalFooter><Button w="100%" colorScheme="cyan" onClick={()=>{setGameover(false);setMenu(true)}}>メインメニューへ</Button></ModalFooter></ModalContent></Modal>
     </Box>
   </Center></>;
 }
