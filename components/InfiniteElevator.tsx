@@ -80,23 +80,24 @@ function playSfx(name:SfxName, enabled=true){
   }catch{}
 }
 
-type BgmMood = 'tier1'|'tier2'|'tier3'|'tier4'|'tier5'|'god'|'casino'|'blackjack'|'hell'|'mystic';
+type BgmMood = 'tier1'|'tier2'|'tier3'|'tier4'|'tier5'|'god'|'casino'|'blackjack'|'hell'|'mystic'|'lucky'|'health'|'mining'|'shop'|'treasure'|'forge'|'auction'|'adventure';
 let bgmTimer:number|null=null;
 let bgmMood:BgmMood|null=null;
+let bgmTier=1;
 let bgmStep=0;
 function stopBgm(){
   if(typeof window!=='undefined' && bgmTimer!==null) window.clearInterval(bgmTimer);
-  bgmTimer=null; bgmMood=null; bgmStep=0;
+  bgmTimer=null; bgmMood=null; bgmTier=1; bgmStep=0;
 }
-function startBgm(mood:BgmMood, enabled=true){
+function startBgm(mood:BgmMood, enabled=true, tier=1){
   if(!enabled || typeof window==='undefined'){stopBgm();return;}
   try{
     const AC=window.AudioContext || (window as any).webkitAudioContext;
     if(!AC)return;
     if(!audioContext)audioContext=new AC();
     const ctx=audioContext; if(ctx.state==='suspended') void ctx.resume();
-    if(bgmMood===mood && bgmTimer!==null)return;
-    stopBgm(); bgmMood=mood;
+    if(bgmMood===mood && bgmTier===tier && bgmTimer!==null)return;
+    stopBgm(); bgmMood=mood; bgmTier=tier;
 
     type MoodCfg={
       chords:number[][]; bass:number[]; melody:number[]; ms:number;
@@ -164,9 +165,61 @@ function startBgm(mood:BgmMood, enabled=true){
         chords:[[261.63,311.13,392],[293.66,349.23,440],[246.94,293.66,369.99],[277.18,329.63,415.3]],
         bass:[65.41,73.42,61.74,69.3], melody:[783.99,932.33,1046.5,1244.51,1046.5,932.33,830.61,698.46], ms:1380,
         padType:'sine',leadType:'sine',padVol:.022,bassVol:.014,leadVol:.013,cutoff:1900,detune:16,shimmer:true
+      ,
+      // 幸運系。明るいメジャーコードと柔らかなベル。Tierが高いほど華やかになる。
+      lucky:{
+        chords:[[261.63,329.63,392],[293.66,369.99,440],[329.63,415.3,493.88],[349.23,440,523.25]],
+        bass:[65.41,73.42,82.41,87.31], melody:[659.25,783.99,880,987.77,1046.5,987.77,880,783.99], ms:1040,
+        padType:'sine',leadType:'triangle',padVol:.020,bassVol:.014,leadVol:.013,cutoff:2100,detune:11,shimmer:true
+      },
+      // 健康・温泉系。ゆったりした長いコードと低い呼吸感。
+      health:{
+        chords:[[261.63,329.63,392],[246.94,311.13,369.99],[220,277.18,329.63],[233.08,293.66,349.23]],
+        bass:[65.41,61.74,55,58.27], melody:[523.25,587.33,659.25,587.33,523.25,493.88,440,493.88], ms:1450,
+        padType:'sine',leadType:'sine',padVol:.024,bassVol:.013,leadVol:.009,cutoff:1250,detune:18
+      },
+      // 採掘系。洞窟の重さを感じる低音と金属的な余韻。
+      mining:{
+        chords:[[130.81,164.81,196],[146.83,174.61,220],[123.47,155.56,185],[110,146.83,174.61]],
+        bass:[32.7,36.71,30.87,27.5], melody:[261.63,329.63,392,349.23,293.66,392,466.16,329.63], ms:1120,
+        padType:'triangle',leadType:'triangle',padVol:.020,bassVol:.026,leadVol:.009,cutoff:760,detune:4,tension:true
+      },
+      // ショップ系。明るく落ち着いた買い物BGM。
+      shop:{
+        chords:[[261.63,329.63,392],[349.23,440,523.25],[293.66,369.99,440],[392,493.88,587.33]],
+        bass:[65.41,87.31,73.42,98], melody:[523.25,659.25,587.33,698.46,659.25,783.99,698.46,587.33], ms:920,
+        padType:'triangle',leadType:'sine',padVol:.017,bassVol:.016,leadVol:.011,cutoff:1750,detune:7
+      },
+      // 宝箱・アイテム箱系。期待感のあるキラキラした進行。
+      treasure:{
+        chords:[[329.63,415.3,493.88],[392,493.88,587.33],[440,554.37,659.25],[493.88,622.25,739.99]],
+        bass:[82.41,98,110,123.47], melody:[659.25,830.61,987.77,1174.66,987.77,830.61,739.99,987.77], ms:1080,
+        padType:'sine',leadType:'triangle',padVol:.020,bassVol:.012,leadVol:.014,cutoff:2350,detune:14,shimmer:true
+      },
+      // 鍛冶屋。炉と金属をイメージした重厚なリズム感。
+      forge:{
+        chords:[[164.81,207.65,246.94],[174.61,220,261.63],[146.83,185,220],[196,246.94,293.66]],
+        bass:[41.2,43.65,36.71,49], melody:[329.63,392,493.88,440,392,523.25,466.16,392], ms:850,
+        padType:'sawtooth',leadType:'triangle',padVol:.015,bassVol:.024,leadVol:.009,cutoff:850,detune:5,tension:true
+      },
+      // 競売・オークション。高級感と緊張感のある進行。
+      auction:{
+        chords:[[220,277.18,329.63],[246.94,311.13,369.99],[261.63,329.63,392],[293.66,369.99,440]],
+        bass:[55,61.74,65.41,73.42], melody:[440,554.37,659.25,622.25,739.99,659.25,587.33,698.46], ms:1000,
+        padType:'triangle',leadType:'sine',padVol:.019,bassVol:.018,leadVol:.011,cutoff:1450,detune:9
+      },
+      // 扉・階段・分岐など冒険系。前進感のあるコード。
+      adventure:{
+        chords:[[196,246.94,293.66],[220,277.18,329.63],[246.94,293.66,369.99],[261.63,329.63,392]],
+        bass:[49,55,61.74,65.41], melody:[392,493.88,587.33,659.25,587.33,523.25,493.88,587.33], ms:900,
+        padType:'triangle',leadType:'triangle',padVol:.018,bassVol:.019,leadVol:.011,cutoff:1550,detune:7
       }
     };
     const c=cfgs[mood];
+    const tierShape=Math.max(1,Math.min(5,tier));
+    const pitchScale=Math.pow(2,((tierShape-1)*0.45)/12);
+    const brightness=1+(tierShape-1)*0.09;
+    const volumeScale=1+(tierShape-1)*0.035;
 
     const connectToDestination=(node:AudioNode, cutoff:number, volume:number)=>{
       const filter=ctx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=cutoff; filter.Q.value=.45;
@@ -176,11 +229,11 @@ function startBgm(mood:BgmMood, enabled=true){
     };
     const sustainedTone=(freq:number,when:number,dur:number,type:OscillatorType,vol:number,detune=0,cutoff=c.cutoff)=>{
       const o=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter();
-      o.type=type; o.frequency.value=freq; o.detune.value=detune;
-      f.type='lowpass'; f.frequency.value=cutoff; f.Q.value=.35;
+      o.type=type; o.frequency.value=freq*pitchScale; o.detune.value=detune;
+      f.type='lowpass'; f.frequency.value=cutoff*brightness; f.Q.value=.35;
       g.gain.setValueAtTime(.0001,when);
-      g.gain.linearRampToValueAtTime(vol,when+.22);
-      g.gain.setValueAtTime(vol,Math.max(when+.24,when+dur-.38));
+      g.gain.linearRampToValueAtTime(vol*volumeScale,when+.22);
+      g.gain.setValueAtTime(vol*volumeScale,Math.max(when+.24,when+dur-.38));
       g.gain.exponentialRampToValueAtTime(.0001,when+dur);
       o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+dur+.05);
     };
@@ -197,13 +250,13 @@ function startBgm(mood:BgmMood, enabled=true){
     };
     const lead=(freq:number,when:number,dur:number)=>{
       const o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();
-      o.type=c.leadType;o.frequency.value=freq;f.type='lowpass';f.frequency.value=Math.max(900,c.cutoff*1.15);f.Q.value=.25;
-      g.gain.setValueAtTime(.0001,when);g.gain.linearRampToValueAtTime(c.leadVol,when+.06);g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+      o.type=c.leadType;o.frequency.value=freq*pitchScale;f.type='lowpass';f.frequency.value=Math.max(900,c.cutoff*1.15);f.Q.value=.25;
+      g.gain.setValueAtTime(.0001,when);g.gain.linearRampToValueAtTime(c.leadVol*volumeScale,when+.06);g.gain.exponentialRampToValueAtTime(.0001,when+dur);
       o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+dur+.05);
     };
     const bell=(freq:number,when:number)=>{
       [1,2.01,3.98].forEach((mul,i)=>{
-        const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*mul;
+        const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*mul*pitchScale;
         g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime((i===0?.012:.0045),when+.01);g.gain.exponentialRampToValueAtTime(.0001,when+1.6+i*.25);
         o.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+2);
       });
@@ -326,12 +379,21 @@ export default function InfiniteElevator(){
   useEffect(()=>{
     if(menu||gameover){stopBgm();return;}
     let mood:BgmMood=`tier${Math.min(5,Math.max(1,room.tier))}` as BgmMood;
-    if(s.inHell||room.kind==='hell')mood='hell';
-    else if(room.kind==='casino')mood='casino';
-    else if(room.kind==='blackjack')mood='blackjack';
-    else if(room.kind==='god')mood='god';
-    else if(['fortune','altar','ultimate','warp'].includes(room.kind||''))mood='mystic';
-    startBgm(mood,soundOn);
+    const title=room.title||'';
+    if(s.inHell||room.kind==='hell') mood='hell';
+    else if(room.kind==='casino') mood='casino';
+    else if(room.kind==='blackjack') mood='blackjack';
+    else if(room.kind==='god') mood='god';
+    else if(room.kind==='fortune'||room.kind==='altar'||room.kind==='ultimate'||room.kind==='warp') mood='mystic';
+    else if(room.kind==='mining'||title.includes('採掘')) mood='mining';
+    else if(room.kind==='shop'||room.kind==='vending'||title.includes('お店')||title.includes('ホームセンター')||title.includes('自動販売機')) mood='shop';
+    else if(room.kind==='forge') mood='forge';
+    else if(room.kind==='auction'||room.kind==='mystery'||title.includes('競売')||title.includes('オークション')) mood='auction';
+    else if(room.kind==='itembox'||title.includes('宝箱')||title.includes('アイテム箱')||title.includes('小箱')) mood='treasure';
+    else if(title.includes('ラッキー')||title.includes('運気')) mood='lucky';
+    else if(title.includes('健康')||title.includes('無病')||title.includes('不老不死')||title.includes('湯')) mood='health';
+    else if(room.kind==='doors'||room.kind==='crossroads'||title.includes('階段')||title.includes('扉')||title.includes('分岐')) mood='adventure';
+    startBgm(mood,soundOn,room.tier);
     return ()=>{};
   },[room.tier,room.kind,room.title,s.inHell,soundOn,menu,gameover]);
   const log=(m:string)=>setS(x=>({...x,logs:[m,...x.logs]}));
