@@ -81,13 +81,18 @@ function playSfx(name:SfxName, enabled=true){
 }
 
 type BgmMood = 'tier1'|'tier2'|'tier3'|'tier4'|'tier5'|'god'|'casino'|'blackjack'|'hell'|'mystic'|'lucky'|'health'|'mining'|'shop'|'treasure'|'forge'|'auction'|'adventure';
+const BGM_MOOD_GAIN:Record<BgmMood,number>={
+  tier1:4.5,tier2:4.2,tier3:3.8,tier4:4.3,tier5:3.2,god:2.8,
+  casino:4.5,blackjack:4.5,hell:4.3,mystic:4.0,lucky:4.0,health:4.5,
+  mining:4.2,shop:4.5,treasure:4.0,forge:4.3,auction:4.3,adventure:4.5
+};
 let bgmTimer:number|null=null;
 let bgmMood:BgmMood|null=null;
 let bgmTier=1;
 let bgmStep=0;
 let bgmMaster:GainNode|null=null;
 const MENU_MUSIC_VOLUME=.58;
-const IN_GAME_BGM_VOLUME=1.8;
+const IN_GAME_BGM_VOLUME=1;
 function stopBgm(){
   if(typeof window!=='undefined' && bgmTimer!==null) window.clearInterval(bgmTimer);
   bgmTimer=null; bgmMood=null; bgmTier=1; bgmStep=0;
@@ -113,8 +118,9 @@ function startBgm(mood:BgmMood, enabled=true, tier=1){
     if(bgmMood===mood && bgmTier===tier && bgmTimer!==null)return;
     stopBgm(); bgmMood=mood; bgmTier=tier;
     bgmMaster=ctx.createGain();
+    const moodGain=IN_GAME_BGM_VOLUME*BGM_MOOD_GAIN[mood];
     bgmMaster.gain.setValueAtTime(.0001,ctx.currentTime);
-    bgmMaster.gain.exponentialRampToValueAtTime(IN_GAME_BGM_VOLUME,ctx.currentTime+.035);
+    bgmMaster.gain.exponentialRampToValueAtTime(moodGain,ctx.currentTime+.035);
     bgmMaster.connect(ctx.destination);
 
     type MoodCfg={
