@@ -85,9 +85,21 @@ let bgmTimer:number|null=null;
 let bgmMood:BgmMood|null=null;
 let bgmTier=1;
 let bgmStep=0;
+let bgmMaster:GainNode|null=null;
 function stopBgm(){
   if(typeof window!=='undefined' && bgmTimer!==null) window.clearInterval(bgmTimer);
   bgmTimer=null; bgmMood=null; bgmTier=1; bgmStep=0;
+  if(bgmMaster && audioContext){
+    const old=bgmMaster;
+    const now=audioContext.currentTime;
+    try{
+      old.gain.cancelScheduledValues(now);
+      old.gain.setValueAtTime(Math.max(.0001,old.gain.value),now);
+      old.gain.exponentialRampToValueAtTime(.0001,now+.08);
+      window.setTimeout(()=>{try{old.disconnect();}catch{}},110);
+    }catch{try{old.disconnect();}catch{}}
+    bgmMaster=null;
+  }
 }
 function startBgm(mood:BgmMood, enabled=true, tier=1){
   if(!enabled || typeof window==='undefined'){stopBgm();return;}
@@ -98,6 +110,10 @@ function startBgm(mood:BgmMood, enabled=true, tier=1){
     const ctx=audioContext; if(ctx.state==='suspended') void ctx.resume();
     if(bgmMood===mood && bgmTier===tier && bgmTimer!==null)return;
     stopBgm(); bgmMood=mood; bgmTier=tier;
+    bgmMaster=ctx.createGain();
+    bgmMaster.gain.setValueAtTime(.0001,ctx.currentTime);
+    bgmMaster.gain.exponentialRampToValueAtTime(1,ctx.currentTime+.035);
+    bgmMaster.connect(ctx.destination);
 
     type MoodCfg={
       chords:number[][]; bass:number[]; melody:number[]; ms:number;
@@ -235,7 +251,7 @@ function startBgm(mood:BgmMood, enabled=true, tier=1){
       g.gain.linearRampToValueAtTime(vol*volumeScale,when+.22);
       g.gain.setValueAtTime(vol*volumeScale,Math.max(when+.24,when+dur-.38));
       g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-      o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+dur+.05);
+      o.connect(f);f.connect(g);g.connect(bgmMaster || ctx.destination);o.start(when);o.stop(when+dur+.05);
     };
     const padChord=(notes:number[],when:number,dur:number)=>{
       notes.forEach((n,i)=>{
@@ -252,13 +268,13 @@ function startBgm(mood:BgmMood, enabled=true, tier=1){
       const o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();
       o.type=c.leadType;o.frequency.value=freq*pitchScale;f.type='lowpass';f.frequency.value=Math.max(900,c.cutoff*1.15);f.Q.value=.25;
       g.gain.setValueAtTime(.0001,when);g.gain.linearRampToValueAtTime(c.leadVol*volumeScale,when+.06);g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-      o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+dur+.05);
+      o.connect(f);f.connect(g);g.connect(bgmMaster || ctx.destination);o.start(when);o.stop(when+dur+.05);
     };
     const bell=(freq:number,when:number)=>{
       [1,2.01,3.98].forEach((mul,i)=>{
         const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*mul*pitchScale;
         g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime((i===0?.012:.0045),when+.01);g.gain.exponentialRampToValueAtTime(.0001,when+1.6+i*.25);
-        o.connect(g);g.connect(ctx.destination);o.start(when);o.stop(when+2);
+        o.connect(g);g.connect(bgmMaster || ctx.destination);o.start(when);o.stop(when+2);
       });
     };
     const breath=(when:number,dur:number,vol=.0025)=>{
@@ -266,7 +282,7 @@ function startBgm(mood:BgmMood, enabled=true, tier=1){
       for(let i=0;i<len;i++)d[i]=(Math.random()*2-1);
       const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();src.buffer=b;f.type='lowpass';f.frequency.value=mood==='hell'?180:480;
       g.gain.setValueAtTime(.0001,when);g.gain.linearRampToValueAtTime(vol,when+.25);g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-      src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(when);src.stop(when+dur+.05);
+      src.connect(f);f.connect(g);g.connect(bgmMaster || ctx.destination);src.start(when);src.stop(when+dur+.05);
     };
 
     const tick=()=>{
