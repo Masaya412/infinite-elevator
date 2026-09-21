@@ -11,7 +11,7 @@ import {
   FaPlay, FaRankingStar, FaRing, FaSackDollar, FaSkull, FaStar, FaStore, FaSun,
   FaTicket, FaTree, FaTrophy, FaVolumeHigh, FaVolumeXmark
 } from 'react-icons/fa6';
-import type { Item, ItemId, Room, State } from '@/lib/types';
+import type { Item, ItemId, Room, State } from '../lib/types';
 
 const tierMeta = [
   {name:'Tier 1 Common', bg:'radial-gradient(circle at center, rgba(14,165,233,.15), rgba(15,23,42,.95))', color:'cyan.300'},
