@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Badge, Box, Button, Center, Divider, Flex, Grid, GridItem, HStack, Icon, IconButton,
   Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Progress,
@@ -371,6 +371,16 @@ export default function InfiniteElevator(){
   const fastTimeout=(fn:()=>void,ms:number)=>window.setTimeout(fn,ms/gameSpeed);
   const fastInterval=(fn:()=>void,ms:number)=>window.setInterval(fn,ms/gameSpeed);
   const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure();
+  const menuAudioRef=useRef<HTMLAudioElement|null>(null);
+  const menuMusicSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/autumnbell.mp3`;
+
+  const playMenuMusic=()=>{
+    const audio=menuAudioRef.current;
+    if(!audio||!soundOn||!menu||gameover)return;
+    audio.volume=.58;
+    const result=audio.play();
+    if(result) void result.catch(()=>{});
+  };
 
   useEffect(()=>{
     const h=Number(localStorage.getItem('infinite_elevator_highscore')||'1');
@@ -392,6 +402,21 @@ export default function InfiniteElevator(){
       .catch(()=>setRankingStatus('error'));
     return ()=>unsub();
   },[]);
+  useEffect(()=>{
+    const audio=menuAudioRef.current;
+    if(!audio)return;
+    if(menu&&!gameover&&soundOn){
+      audio.loop=true;
+      audio.volume=.58;
+      const result=audio.play();
+      if(result) void result.catch(()=>{});
+    }else{
+      audio.pause();
+      if(!menu) audio.currentTime=0;
+    }
+    return ()=>{audio.pause();};
+  },[menu,gameover,soundOn]);
+
   useEffect(()=>{
     if(menu||gameover){stopBgm();return;}
     let mood:BgmMood=`tier${Math.min(5,Math.max(1,room.tier))}` as BgmMood;
@@ -444,7 +469,7 @@ export default function InfiniteElevator(){
     }
   };
 
-  const start=()=>{playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
+  const start=()=>{const audio=menuAudioRef.current;if(audio){audio.pause();audio.currentTime=0;}playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
   const end=()=>{playSfx('gameover',soundOn);setGameover(true); setS(x=>{const h=Math.max(x.highScore,x.floor); localStorage.setItem('infinite_elevator_highscore',String(h)); return {...x,highScore:h};});};
 
   const triggerRoom=(forcedTier?:number,forcedType?:string)=>{
@@ -726,11 +751,13 @@ export default function InfiniteElevator(){
   const finalMode=s.turnsLeft<=0 && !moving && !gameover;
   const disabled=finalMode ? (moving||gameover||slotSpinning||bj.playing) : (moving||gameover||slotSpinning||bj.playing||s.inHell);
 
-  const handleButtonSound=(e:React.MouseEvent)=>{const el=e.target as HTMLElement;if(el.closest('button'))playSfx('click',soundOn);};
+  const handleButtonSound=(e:React.MouseEvent)=>{if(menu&&soundOn)playMenuMusic();const el=e.target as HTMLElement;if(el.closest('button'))playSfx('click',soundOn);};
 
   return <><style>{`@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-3deg)}to{transform:scale(1.08) rotate(3deg)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{0%{opacity:0;transform:scale(.72)}45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.24)}}@keyframes rareRing{0%{opacity:0;transform:scale(.35)}35%{opacity:.95}100%{opacity:0;transform:scale(1.65)}}@keyframes rareSpark{0%{opacity:0;transform:translateY(18px) scale(.6)}35%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.15)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
     <Box onClickCapture={handleButtonSound} w="100%" maxW="432px" h={{base:'100dvh',md:'min(860px, calc(100dvh - 32px))'}} maxH={{base:'100dvh',md:'calc(100dvh - 32px)'}} bg="#0f141d" borderRadius={{base:0,md:'3xl'}} overflow="hidden" position="relative" borderWidth={{base:0,md:'4px'}} borderColor="whiteAlpha.200" boxShadow="2xl">
+      <audio ref={menuAudioRef} src={menuMusicSrc} preload="auto" loop/>
       {menu&&<Flex position="absolute" inset={0} zIndex={40} p={6} bg="linear-gradient(#0f172a,#0f141d,#000)" direction="column" justify="space-between" align="center" textAlign="center">
+        <IconButton position="absolute" top={3} right={3} aria-label="スタートBGM" size="sm" variant="ghost" color={soundOn?'yellow.300':'gray.500'} icon={soundOn?<FaVolumeHigh/>:<FaVolumeXmark/>} onClick={()=>setSoundOn(v=>!v)}/>
         <Box mt={8}><Center mx="auto" w="82px" h="82px" borderRadius="2xl" bg="cyan.400" color="cyan.200" bgColor="rgba(0,240,255,.1)" border="1px solid rgba(0,240,255,.3)"><Icon as={FaElevator} boxSize={12} animation="pulseGlow 2s infinite"/></Center><Text fontSize="3xl" fontWeight="black" mt={3}>無限エレベーター</Text><Text fontSize="xs" color="cyan.300" fontWeight="bold" letterSpacing="widest">INFINITE ELEVATOR</Text></Box>
         <Flex w="100%" bg="gray.900" border="1px solid" borderColor="gray.700" rounded="2xl" p={4} justify="space-between" align="center"><HStack><Icon as={FaTrophy} color="yellow.400"/><Text fontSize="sm" color="gray.400" fontWeight="bold">自己最高記録</Text></HStack><Text fontFamily="mono" fontSize="2xl" color="yellow.400" fontWeight="bold">{s.highScore} 階</Text></Flex>
         <Stack w="100%" spacing={2.5} mb={4}><Button h="58px" colorScheme="cyan" bgGradient="linear(to-r, cyan.500, blue.600)" color="white" leftIcon={<FaPlay/>} onClick={start}>ゲームを始める</Button><SimpleGrid columns={2} spacing={2}><Button size="sm" bg="gray.800" color="yellow.300" leftIcon={<FaRankingStar/>} onClick={rank.onOpen}>ランキング</Button><Button size="sm" bg="gray.800" color="green.300" leftIcon={<FaCircleQuestion/>} onClick={rules.onOpen}>ルール説明</Button><Button size="sm" bg="gray.800" color="cyan.300" leftIcon={<FaBookOpen/>} onClick={guide.onOpen}>ステージ図鑑</Button><Button size="sm" bg="gray.800" color="purple.300" leftIcon={<FaGem/>} onClick={itemGuide.onOpen}>アイテム図鑑</Button></SimpleGrid></Stack>

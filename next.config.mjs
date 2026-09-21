@@ -5,6 +5,7 @@ const isUserOrOrgPage = repository.endsWith('.github.io');
 const basePath = isGitHubActions && repository && !isUserOrOrgPage ? `/${repository}` : '';
 
 const nextConfig = {
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   output: 'export',
   trailingSlash: true,
   basePath,
