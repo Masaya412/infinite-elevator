@@ -55,3 +55,7 @@ GitHubのリポジトリで:
 - Inventory cards now use high-contrast text and icons at all times.
 - Blackjack HIT results show the drawn card and final hand total; bust explicitly shows that the total exceeded 21.
 - Magic Forge can be used only once per visit. After one upgrade, the room shows that upgrading is complete.
+
+## v12 updates
+- ミステリーオークションの購入ボタンを中央配置。
+- 落札後の結果に「当たり」ではなく、獲得した商品名を表示。
