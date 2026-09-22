@@ -313,3 +313,8 @@ git push origin main
 - 36枚のステージ背景を PNG から WebP へ変換
 - 最大幅1280pxへ縮小して軽量化
 - アプリ内参照を stages/*.webp へ変更
+
+## v50 stage background fix
+- ステージ画像ファイル名を日本語名から stage-01.webp〜stage-36.webp へ変更
+- GitHub PagesでのURLエンコード問題を避ける構成へ変更
+- プレイ画面の親背景へ画像を直接指定し、確実に表示されるよう修正
