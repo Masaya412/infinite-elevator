@@ -302,3 +302,9 @@ git push origin main
 - ページ起動直後に `new Audio()` → `play()` を試行
 - autoplay拒否時は pointerdown / touchstart / keydown / click で再試行
 - ゲーム開始時はカスタムイベントでメニューBGM停止、メニュー復帰時は再開
+
+## v48 stage image integration
+- 36枚の番号付きステージ画像を正式ステージ名にリネームして `public/stages/` に格納
+- ステージ図鑑の各カード・拡大表示に専用画像を適用
+- 実際のプレイ画面でも現在ステージの専用背景画像を表示
+- ATM / アンケート娘 / 伝説の神器商店は画像素材未収録のため従来の専用グラデーション背景を維持

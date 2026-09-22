@@ -27,45 +27,45 @@ const tierMeta = [
 
 type StageCatalogEntry={tier:number;title:string;desc:string;image?:string;bg:string;accent:string;label?:string};
 const stageCatalog:StageCatalogEntry[]=[
-{tier:0,title:'エレベーターホール',desc:'すべての冒険が始まる巨大昇降塔の入口。',image:'elevator-hall.png',bg:'linear-gradient(180deg,#0c1117,#020304)',accent:'#d7d2c8',label:'START'},
-{tier:1,title:'何も無い部屋',desc:'静寂だけが残る空室。',bg:'linear-gradient(145deg,#1b1d20,#08090a)',accent:'#a3a3a3'},
-{tier:1,title:'ラッキー部屋',desc:'淡い緑の光に包まれ、運気が上昇する。',bg:'radial-gradient(circle at 50% 38%,rgba(74,222,128,.35),transparent 42%),linear-gradient(180deg,#0d2a19,#060b08)',accent:'#86efac'},
-{tier:2,title:'健康の湯',desc:'Tier2の癒やし温泉。浸かると残り回数が+1。',bg:'radial-gradient(circle at 50% 72%,rgba(103,232,249,.28),transparent 42%),linear-gradient(180deg,#14313a,#071015)',accent:'#a5f3fc'},
-{tier:1,title:'落ちている財布',desc:'無人の金属廊下に、ぽつんと財布が落ちている。',bg:'radial-gradient(circle at 50% 70%,rgba(250,204,21,.18),transparent 25%),linear-gradient(180deg,#24200e,#090806)',accent:'#fde68a'},
-{tier:1,title:'短い階段',desc:'+5〜20階進める短い階段。',bg:'linear-gradient(155deg,#1b2b3b,#080b10 70%)',accent:'#93c5fd'},
-{tier:1,title:'2つの扉',desc:'行き先の異なる二枚の扉が現れる分岐室。',bg:'radial-gradient(circle at 28% 50%,rgba(251,146,60,.18),transparent 30%),radial-gradient(circle at 72% 50%,rgba(96,165,250,.18),transparent 30%),linear-gradient(180deg,#24170d,#09090b)',accent:'#fdba74'},
-{tier:1,title:'小さなお店',desc:'塔の片隅で営業する小さな商店。',bg:'radial-gradient(circle at 50% 22%,rgba(250,204,21,.18),transparent 34%),linear-gradient(180deg,#2b2412,#0b0a07)',accent:'#fde68a'},
-{tier:2,title:'小さな宝箱',desc:'500〜1000円、または宝石1個が入ったTier2宝箱。',bg:'radial-gradient(circle at 50% 65%,rgba(192,132,252,.24),transparent 34%),linear-gradient(180deg,#21132f,#09070d)',accent:'#d8b4fe'},
-{tier:1,title:'占い師の小部屋',desc:'紫の水晶光が揺れる神秘的な占い部屋。',bg:'radial-gradient(circle at 50% 38%,rgba(192,132,252,.34),transparent 35%),linear-gradient(180deg,#281344,#080711)',accent:'#d8b4fe'},
-{tier:1,title:'3つの怪しい小箱',desc:'赤・青・緑の小箱が並ぶ不穏な小部屋。',bg:'radial-gradient(circle at 24% 70%,rgba(248,113,113,.23),transparent 22%),radial-gradient(circle at 50% 70%,rgba(96,165,250,.22),transparent 22%),radial-gradient(circle at 76% 70%,rgba(74,222,128,.22),transparent 22%),linear-gradient(180deg,#17181b,#070809)',accent:'#e5e7eb'},
-{tier:1,title:'怪しい物々交換所',desc:'古い露店と積まれた荷物が並ぶ交換所。',bg:'radial-gradient(circle at 50% 25%,rgba(217,119,6,.18),transparent 35%),linear-gradient(180deg,#2b1b0d,#0b0805)',accent:'#fdba74'},
-{tier:1,title:'運命の分岐路',desc:'暗い塔内で二方向へ分かれる巨大通路。',bg:'linear-gradient(160deg,#172330,#070a0e 72%)',accent:'#cbd5e1'},
-{tier:2,title:'自動販売機',desc:'場違いな光を放つ古い自動販売機。',bg:'radial-gradient(circle at 50% 55%,rgba(56,189,248,.22),transparent 30%),linear-gradient(180deg,#0f2430,#071015)',accent:'#7dd3fc'},
-{tier:2,title:'超ラッキー部屋',desc:'強い緑光と粒子が舞う幸運の部屋。',bg:'radial-gradient(circle at center,rgba(74,222,128,.42),transparent 44%),linear-gradient(180deg,#0c351d,#071009)',accent:'#86efac'},
-{tier:3,title:'無病の湯',desc:'Tier3の上質な温泉。残り回数が+2〜3。',bg:'radial-gradient(circle at 50% 68%,rgba(125,211,252,.34),transparent 42%),linear-gradient(180deg,#173b48,#071116)',accent:'#bae6fd'},
-{tier:2,title:'ルビーの採掘場',desc:'赤い鉱脈が岩壁を走る灼熱の採掘洞。',bg:'radial-gradient(circle at 50% 58%,rgba(248,113,113,.30),transparent 38%),linear-gradient(145deg,#381717,#0c0808 70%)',accent:'#fca5a5'},
-{tier:2,title:'長い階段',desc:'+20〜50階進める長い螺旋階段。',bg:'linear-gradient(155deg,#20354b,#080c12 70%)',accent:'#93c5fd'},
-{tier:2,title:'大きなお店',desc:'照明と棚が増えた本格的なショップフロア。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.22),transparent 34%),linear-gradient(180deg,#342b13,#0b0a07)',accent:'#fde68a'},
-{tier:2,title:'地下カードサロン',desc:'深緑のテーブルと低い照明が並ぶ地下サロン。',bg:'radial-gradient(circle at center,rgba(13,148,136,.28),transparent 45%),linear-gradient(180deg,#07372f,#050b0a)',accent:'#5eead4'},
-{tier:2,title:'魔法鍛冶屋',desc:'炉の橙光と火花が飛び散る鍛冶工房。',bg:'radial-gradient(circle at 50% 68%,rgba(251,146,60,.36),transparent 42%),linear-gradient(180deg,#35180b,#0d0805)',accent:'#fdba74'},
-{tier:2,title:'運試しの祭壇',desc:'金色の燭光が灯る古代祭壇。',bg:'radial-gradient(circle at 50% 38%,rgba(253,224,71,.28),transparent 40%),linear-gradient(180deg,#352b0f,#0b0a06)',accent:'#fde68a'},
-{tier:2,title:'ミステリーオークション',desc:'仮面の客席を思わせる薄暗い競売場。',bg:'radial-gradient(circle at 50% 24%,rgba(217,119,6,.24),transparent 38%),linear-gradient(180deg,#2b1a0b,#0b0805)',accent:'#fbbf24'},
-{tier:3,title:'スロットカジノ',desc:'紫とピンクのネオンが瞬く異質なカジノ。',bg:'radial-gradient(circle at 20% 18%,rgba(236,72,153,.34),transparent 32%),radial-gradient(circle at 80% 25%,rgba(139,92,246,.38),transparent 34%),linear-gradient(160deg,#200b36,#080511 70%)',accent:'#f0abfc'},
-{tier:3,title:'極ラッキー部屋',desc:'祝福の粒子と緑光が満ちた高位の幸運部屋。',bg:'radial-gradient(circle at center,rgba(74,222,128,.52),transparent 45%),linear-gradient(180deg,#0f4425,#071109)',accent:'#bbf7d0'},
-{tier:4,title:'不老不死の湯',desc:'Tier4の伝説的な温泉。残り回数が+4〜5。',bg:'radial-gradient(circle at 50% 22%,rgba(255,255,255,.18),transparent 32%),radial-gradient(circle at 50% 70%,rgba(186,230,253,.42),transparent 42%),linear-gradient(180deg,#31506c,#101724)',accent:'#e0f2fe'},
-{tier:3,title:'エメラルドの採掘場',desc:'緑の結晶が洞窟全体を照らす採掘場。',bg:'radial-gradient(circle at 50% 58%,rgba(52,211,153,.31),transparent 38%),linear-gradient(145deg,#143a2c,#080d0a 70%)',accent:'#6ee7b7'},
-{tier:3,title:'果てしなく長い階段',desc:'+50〜100階進める終点の見えない巨大階段。',bg:'radial-gradient(circle at 50% 10%,rgba(147,197,253,.18),transparent 30%),linear-gradient(155deg,#243a55,#070a10 74%)',accent:'#bfdbfe'},
-{tier:3,title:'ホームセンター',desc:'塔の中とは思えない巨大な物資売り場。',bg:'radial-gradient(circle at 50% 20%,rgba(250,204,21,.24),transparent 34%),linear-gradient(180deg,#3a3014,#0b0a07)',accent:'#fde68a'},
-{tier:3,title:'不思議なアイテム箱',desc:'紫金の光を漏らす豪華な箱が置かれている。',bg:'radial-gradient(circle at 50% 62%,rgba(192,132,252,.36),transparent 35%),linear-gradient(180deg,#2b1640,#09070d)',accent:'#e9d5ff'},
+{tier:0,title:'エレベーターホール',desc:'すべての冒険が始まる巨大昇降塔の入口。',image:'stages/エレベーターホール.png',bg:'linear-gradient(180deg,#0c1117,#020304)',accent:'#d7d2c8',label:'START'},
+{tier:1,title:'何も無い部屋',desc:'静寂だけが残る空室。',image:'stages/何も無い部屋.png',bg:'linear-gradient(145deg,#1b1d20,#08090a)',accent:'#a3a3a3'},
+{tier:1,title:'ラッキー部屋',desc:'淡い緑の光に包まれ、運気が上昇する。',image:'stages/ラッキー部屋.png',bg:'radial-gradient(circle at 50% 38%,rgba(74,222,128,.35),transparent 42%),linear-gradient(180deg,#0d2a19,#060b08)',accent:'#86efac'},
+{tier:2,title:'健康の湯',desc:'Tier2の癒やし温泉。浸かると残り回数が+1。',image:'stages/健康の湯.png',bg:'radial-gradient(circle at 50% 72%,rgba(103,232,249,.28),transparent 42%),linear-gradient(180deg,#14313a,#071015)',accent:'#a5f3fc'},
+{tier:1,title:'落ちている財布',desc:'無人の金属廊下に、ぽつんと財布が落ちている。',image:'stages/落ちている財布.png',bg:'radial-gradient(circle at 50% 70%,rgba(250,204,21,.18),transparent 25%),linear-gradient(180deg,#24200e,#090806)',accent:'#fde68a'},
+{tier:1,title:'短い階段',desc:'+5〜20階進める短い階段。',image:'stages/短い階段.png',bg:'linear-gradient(155deg,#1b2b3b,#080b10 70%)',accent:'#93c5fd'},
+{tier:1,title:'2つの扉',desc:'行き先の異なる二枚の扉が現れる分岐室。',image:'stages/2つの扉.png',bg:'radial-gradient(circle at 28% 50%,rgba(251,146,60,.18),transparent 30%),radial-gradient(circle at 72% 50%,rgba(96,165,250,.18),transparent 30%),linear-gradient(180deg,#24170d,#09090b)',accent:'#fdba74'},
+{tier:1,title:'小さなお店',desc:'塔の片隅で営業する小さな商店。',image:'stages/小さなお店.png',bg:'radial-gradient(circle at 50% 22%,rgba(250,204,21,.18),transparent 34%),linear-gradient(180deg,#2b2412,#0b0a07)',accent:'#fde68a'},
+{tier:2,title:'小さな宝箱',desc:'500〜1000円、または宝石1個が入ったTier2宝箱。',image:'stages/小さな宝箱.png',bg:'radial-gradient(circle at 50% 65%,rgba(192,132,252,.24),transparent 34%),linear-gradient(180deg,#21132f,#09070d)',accent:'#d8b4fe'},
+{tier:1,title:'占い師の小部屋',desc:'紫の水晶光が揺れる神秘的な占い部屋。',image:'stages/占い師の小部屋.png',bg:'radial-gradient(circle at 50% 38%,rgba(192,132,252,.34),transparent 35%),linear-gradient(180deg,#281344,#080711)',accent:'#d8b4fe'},
+{tier:1,title:'3つの怪しい小箱',desc:'赤・青・緑の小箱が並ぶ不穏な小部屋。',image:'stages/3つの怪しい小箱.png',bg:'radial-gradient(circle at 24% 70%,rgba(248,113,113,.23),transparent 22%),radial-gradient(circle at 50% 70%,rgba(96,165,250,.22),transparent 22%),radial-gradient(circle at 76% 70%,rgba(74,222,128,.22),transparent 22%),linear-gradient(180deg,#17181b,#070809)',accent:'#e5e7eb'},
+{tier:1,title:'怪しい物々交換所',desc:'古い露店と積まれた荷物が並ぶ交換所。',image:'stages/怪しい物々交換所.png',bg:'radial-gradient(circle at 50% 25%,rgba(217,119,6,.18),transparent 35%),linear-gradient(180deg,#2b1b0d,#0b0805)',accent:'#fdba74'},
+{tier:1,title:'運命の分岐路',desc:'暗い塔内で二方向へ分かれる巨大通路。',image:'stages/運命の分岐路.png',bg:'linear-gradient(160deg,#172330,#070a0e 72%)',accent:'#cbd5e1'},
+{tier:2,title:'自動販売機',desc:'場違いな光を放つ古い自動販売機。',image:'stages/自動販売機.png',bg:'radial-gradient(circle at 50% 55%,rgba(56,189,248,.22),transparent 30%),linear-gradient(180deg,#0f2430,#071015)',accent:'#7dd3fc'},
+{tier:2,title:'超ラッキー部屋',desc:'強い緑光と粒子が舞う幸運の部屋。',image:'stages/超ラッキー部屋.png',bg:'radial-gradient(circle at center,rgba(74,222,128,.42),transparent 44%),linear-gradient(180deg,#0c351d,#071009)',accent:'#86efac'},
+{tier:3,title:'無病の湯',desc:'Tier3の上質な温泉。残り回数が+2〜3。',image:'stages/無病の湯.png',bg:'radial-gradient(circle at 50% 68%,rgba(125,211,252,.34),transparent 42%),linear-gradient(180deg,#173b48,#071116)',accent:'#bae6fd'},
+{tier:2,title:'ルビーの採掘場',desc:'赤い鉱脈が岩壁を走る灼熱の採掘洞。',image:'stages/ルビーの採掘場.png',bg:'radial-gradient(circle at 50% 58%,rgba(248,113,113,.30),transparent 38%),linear-gradient(145deg,#381717,#0c0808 70%)',accent:'#fca5a5'},
+{tier:2,title:'長い階段',desc:'+20〜50階進める長い螺旋階段。',image:'stages/長い階段.png',bg:'linear-gradient(155deg,#20354b,#080c12 70%)',accent:'#93c5fd'},
+{tier:2,title:'大きなお店',desc:'照明と棚が増えた本格的なショップフロア。',image:'stages/大きなお店.png',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.22),transparent 34%),linear-gradient(180deg,#342b13,#0b0a07)',accent:'#fde68a'},
+{tier:2,title:'地下カードサロン',desc:'深緑のテーブルと低い照明が並ぶ地下サロン。',image:'stages/地下カードサロン.png',bg:'radial-gradient(circle at center,rgba(13,148,136,.28),transparent 45%),linear-gradient(180deg,#07372f,#050b0a)',accent:'#5eead4'},
+{tier:2,title:'魔法鍛冶屋',desc:'炉の橙光と火花が飛び散る鍛冶工房。',image:'stages/魔法鍛冶屋.png',bg:'radial-gradient(circle at 50% 68%,rgba(251,146,60,.36),transparent 42%),linear-gradient(180deg,#35180b,#0d0805)',accent:'#fdba74'},
+{tier:2,title:'運試しの祭壇',desc:'金色の燭光が灯る古代祭壇。',image:'stages/運試しの祭壇.png',bg:'radial-gradient(circle at 50% 38%,rgba(253,224,71,.28),transparent 40%),linear-gradient(180deg,#352b0f,#0b0a06)',accent:'#fde68a'},
+{tier:2,title:'ミステリーオークション',desc:'仮面の客席を思わせる薄暗い競売場。',image:'stages/ミステリーオークション.png',bg:'radial-gradient(circle at 50% 24%,rgba(217,119,6,.24),transparent 38%),linear-gradient(180deg,#2b1a0b,#0b0805)',accent:'#fbbf24'},
+{tier:3,title:'スロットカジノ',desc:'紫とピンクのネオンが瞬く異質なカジノ。',image:'stages/スロットカジノ.png',bg:'radial-gradient(circle at 20% 18%,rgba(236,72,153,.34),transparent 32%),radial-gradient(circle at 80% 25%,rgba(139,92,246,.38),transparent 34%),linear-gradient(160deg,#200b36,#080511 70%)',accent:'#f0abfc'},
+{tier:3,title:'極ラッキー部屋',desc:'祝福の粒子と緑光が満ちた高位の幸運部屋。',image:'stages/極ラッキー部屋.png',bg:'radial-gradient(circle at center,rgba(74,222,128,.52),transparent 45%),linear-gradient(180deg,#0f4425,#071109)',accent:'#bbf7d0'},
+{tier:4,title:'不老不死の湯',desc:'Tier4の伝説的な温泉。残り回数が+4〜5。',image:'stages/不老不死の湯.png',bg:'radial-gradient(circle at 50% 22%,rgba(255,255,255,.18),transparent 32%),radial-gradient(circle at 50% 70%,rgba(186,230,253,.42),transparent 42%),linear-gradient(180deg,#31506c,#101724)',accent:'#e0f2fe'},
+{tier:3,title:'エメラルドの採掘場',desc:'緑の結晶が洞窟全体を照らす採掘場。',image:'stages/エメラルドの採掘場.png',bg:'radial-gradient(circle at 50% 58%,rgba(52,211,153,.31),transparent 38%),linear-gradient(145deg,#143a2c,#080d0a 70%)',accent:'#6ee7b7'},
+{tier:3,title:'果てしなく長い階段',desc:'+50〜100階進める終点の見えない巨大階段。',image:'stages/果てしなく長い階段.png',bg:'radial-gradient(circle at 50% 10%,rgba(147,197,253,.18),transparent 30%),linear-gradient(155deg,#243a55,#070a10 74%)',accent:'#bfdbfe'},
+{tier:3,title:'ホームセンター',desc:'塔の中とは思えない巨大な物資売り場。',image:'stages/ホームセンター.png',bg:'radial-gradient(circle at 50% 20%,rgba(250,204,21,.24),transparent 34%),linear-gradient(180deg,#3a3014,#0b0a07)',accent:'#fde68a'},
+{tier:3,title:'不思議なアイテム箱',desc:'紫金の光を漏らす豪華な箱が置かれている。',image:'stages/不思議なアイテム箱.png',bg:'radial-gradient(circle at 50% 62%,rgba(192,132,252,.36),transparent 35%),linear-gradient(180deg,#2b1640,#09070d)',accent:'#e9d5ff'},
 {tier:3,title:'アンケート娘',desc:'2択アンケートで多数派を当てる不思議な調査室。',bg:'radial-gradient(circle at 50% 35%,rgba(244,114,182,.28),transparent 38%),linear-gradient(180deg,#32172a,#0d0810)',accent:'#f9a8d4'},
-{tier:4,title:'ワープホール',desc:'青紫の空間が歪み、行き先の見えない門が開く。',bg:'radial-gradient(circle at center,rgba(34,211,238,.40),rgba(168,85,247,.22) 32%,transparent 55%),linear-gradient(180deg,#082333,#0b0718)',accent:'#67e8f9'},
-{tier:4,title:'神々の競売場',desc:'黄金の柱と赤い幕に囲まれた荘厳な競売場。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.34),transparent 34%),linear-gradient(180deg,#4a2b0c,#130a05)',accent:'#fde68a'},
-{tier:4,title:'ダイヤモンドの採掘場',desc:'青白い結晶光が反射する極上の鉱山。',bg:'radial-gradient(circle at 50% 55%,rgba(34,211,238,.38),transparent 38%),linear-gradient(145deg,#123544,#080d11 70%)',accent:'#a5f3fc'},
+{tier:4,title:'ワープホール',desc:'青紫の空間が歪み、行き先の見えない門が開く。',image:'stages/ワープホール.png',bg:'radial-gradient(circle at center,rgba(34,211,238,.40),rgba(168,85,247,.22) 32%,transparent 55%),linear-gradient(180deg,#082333,#0b0718)',accent:'#67e8f9'},
+{tier:4,title:'神々の競売場',desc:'黄金の柱と赤い幕に囲まれた荘厳な競売場。',image:'stages/神々の競売場.png',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.34),transparent 34%),linear-gradient(180deg,#4a2b0c,#130a05)',accent:'#fde68a'},
+{tier:4,title:'ダイヤモンドの採掘場',desc:'青白い結晶光が反射する極上の鉱山。',image:'stages/ダイヤモンドの採掘場.png',bg:'radial-gradient(circle at 50% 55%,rgba(34,211,238,.38),transparent 38%),linear-gradient(145deg,#123544,#080d11 70%)',accent:'#a5f3fc'},
 {tier:2,title:'ATM',desc:'お金を預け、次の遭遇時に2倍で受け取れる特殊端末。',bg:'radial-gradient(circle at 50% 45%,rgba(34,211,238,.26),transparent 36%),linear-gradient(180deg,#102631,#071014)',accent:'#67e8f9'},
-{tier:5,title:'究極のルーレット',desc:'金・紫・赤の光が回転する神々の遊戯場。',bg:'conic-gradient(from 0deg at 50% 50%,rgba(250,204,21,.32),rgba(168,85,247,.28),rgba(239,68,68,.26),rgba(250,204,21,.32)),radial-gradient(circle,#563008,#0a0a0d 68%)',accent:'#fde68a'},
-{tier:5,title:'神の故郷',desc:'白金の光が降り注ぐ、塔の最上位に近い聖域。',bg:'radial-gradient(circle at 50% 12%,rgba(255,255,255,.82),rgba(250,204,21,.34) 28%,transparent 58%),linear-gradient(180deg,#7a5917,#2d2409 42%,#090b10)',accent:'#fff7c2'},
+{tier:5,title:'究極のルーレット',desc:'金・紫・赤の光が回転する神々の遊戯場。',image:'stages/究極のルーレット.png',bg:'conic-gradient(from 0deg at 50% 50%,rgba(250,204,21,.32),rgba(168,85,247,.28),rgba(239,68,68,.26),rgba(250,204,21,.32)),radial-gradient(circle,#563008,#0a0a0d 68%)',accent:'#fde68a'},
+{tier:5,title:'神の故郷',desc:'白金の光が降り注ぐ、塔の最上位に近い聖域。',image:'stages/神の故郷.png',bg:'radial-gradient(circle at 50% 12%,rgba(255,255,255,.82),rgba(250,204,21,.34) 28%,transparent 58%),linear-gradient(180deg,#7a5917,#2d2409 42%,#090b10)',accent:'#fff7c2'},
 {tier:5,title:'伝説の神器商店',desc:'ここでしか買えない三種の神器を扱う伝説級の商店。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.55),transparent 38%),linear-gradient(180deg,#5a3b0c,#180f05)',accent:'#fde68a'},
-{tier:6,title:'地獄の門',desc:'赤黒い霧と灼熱の亀裂が広がる脱出専用フロア。',bg:'radial-gradient(circle at 50% 28%,rgba(185,28,28,.70),transparent 38%),linear-gradient(180deg,#3b0505,#0b0000 72%,#000)',accent:'#fca5a5',label:'HELL'}
+{tier:6,title:'地獄の門',desc:'赤黒い霧と灼熱の亀裂が広がる脱出専用フロア。',image:'stages/地獄の門.png',bg:'radial-gradient(circle at 50% 28%,rgba(185,28,28,.70),transparent 38%),linear-gradient(180deg,#3b0505,#0b0000 72%,#000)',accent:'#fca5a5',label:'HELL'}
 ];
 
 
@@ -901,6 +901,8 @@ export default function InfiniteElevator(){
 
   const selectedItem=selected===null?null:s.items[selected];
 
+  const activeStageImage=useMemo(()=>stageCatalog.find(stage=>stage.title===room.title)?.image||null,[room.title]);
+
   const roomAtmosphere=useMemo(()=>{
     const k=room.kind||''; const t=room.title;
     if(k==='hell'||s.inHell)return {bg:'radial-gradient(circle at 50% 25%, rgba(127,29,29,.75), transparent 38%), linear-gradient(180deg,#300505 0%,#090000 70%,#000 100%)',accent:'rgba(248,113,113,.22)',label:'HELL GATE'};
@@ -960,6 +962,7 @@ export default function InfiniteElevator(){
         </Box>
 
         <Flex flex="1" minH={0} position="relative" p={2} align="center" justify="center" bg={roomAtmosphere.bg} overflow="hidden">
+          {activeStageImage&&<Box position="absolute" inset={0} pointerEvents="none" bgImage={`linear-gradient(180deg,rgba(2,4,6,.18),rgba(2,4,6,.42)), url("${process.env.NEXT_PUBLIC_BASE_PATH||''}/${activeStageImage}")`} bgSize="cover" bgPosition="center" bgRepeat="no-repeat"/>}
           <Box position="absolute" inset={0} pointerEvents="none" bg="linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))"/>
           <Box position="absolute" top="-8%" left="50%" transform="translateX(-50%)" w="46%" h="74%" pointerEvents="none" bg="linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.03) 38%,transparent 90%)" filter="blur(12px)" opacity={.52} animation="cathedralFlicker 5s ease-in-out infinite"/>
           <Box position="absolute" inset={0} pointerEvents="none" opacity={.34} bgImage={`repeating-linear-gradient(90deg, transparent 0 35px, rgba(170,174,176,.07) 36px 37px),repeating-linear-gradient(0deg, transparent 0 70px, ${roomAtmosphere.accent} 71px 72px)`}/>{roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Box position="absolute" inset={0} zIndex={16} pointerEvents="none" overflow="hidden">
