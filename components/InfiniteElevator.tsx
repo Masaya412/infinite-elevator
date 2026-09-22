@@ -472,16 +472,44 @@ export default function InfiniteElevator(){
   useEffect(()=>{
     const audio=menuAudioRef.current;
     if(!audio)return;
-    if(menu&&!gameover&&soundOn){
-      audio.loop=true;
-      audio.volume=MENU_MUSIC_VOLUME;
+
+    audio.loop=true;
+    audio.volume=MENU_MUSIC_VOLUME;
+
+    const removeUnlockListeners=()=>{
+      window.removeEventListener('pointerdown',unlockAudio);
+      window.removeEventListener('keydown',unlockAudio);
+      window.removeEventListener('touchstart',unlockAudio);
+    };
+
+    const tryPlay=()=>{
+      if(!menu||gameover||!soundOn)return;
       const result=audio.play();
-      if(result) void result.catch(()=>{});
+      if(result){
+        void result.then(removeUnlockListeners).catch(()=>{});
+      }
+    };
+
+    function unlockAudio(){
+      tryPlay();
+    }
+
+    if(menu&&!gameover&&soundOn){
+      // ページ表示直後にまず自動再生を試す。
+      tryPlay();
+      // ブラウザに自動再生を止められた場合だけ、最初の操作で即座に解放する。
+      window.addEventListener('pointerdown',unlockAudio,{once:true,passive:true});
+      window.addEventListener('touchstart',unlockAudio,{once:true,passive:true});
+      window.addEventListener('keydown',unlockAudio,{once:true});
     }else{
       audio.pause();
       if(!menu) audio.currentTime=0;
     }
-    return ()=>{audio.pause();};
+
+    return ()=>{
+      removeUnlockListeners();
+      if(!menu||gameover||!soundOn) audio.pause();
+    };
   },[menu,gameover,soundOn]);
 
   useEffect(()=>{
@@ -955,7 +983,7 @@ export default function InfiniteElevator(){
 
   return <><style>{`@keyframes cathedralFlicker{0%,100%{opacity:.3}50%{opacity:.62}}@keyframes steelSweep{0%{transform:translateX(-160%)}100%{transform:translateX(160%)}}@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-7deg)}to{transform:scale(1.10) rotate(7deg)}}@keyframes hellShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}@keyframes hellRing{0%{transform:scale(.55) rotate(0deg);opacity:.9}100%{transform:scale(1.55) rotate(220deg);opacity:0}}@keyframes revealPulse{from{transform:scale(.96);filter:brightness(.95)}to{transform:scale(1.06);filter:brightness(1.35)}}@keyframes ultimateWheel{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes warpSpin{0%{transform:rotate(0deg) scale(.85);filter:brightness(1)}50%{transform:rotate(180deg) scale(1.08);filter:brightness(1.8)}100%{transform:rotate(360deg) scale(.85);filter:brightness(1)}}@keyframes ultimateFlash{0%,100%{opacity:.45;filter:brightness(1)}50%{opacity:1;filter:brightness(1.8)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{0%{opacity:0;transform:scale(.72)}45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.24)}}@keyframes rareRing{0%{opacity:0;transform:scale(.35)}35%{opacity:.95}100%{opacity:0;transform:scale(1.65)}}@keyframes rareSpark{0%{opacity:0;transform:translateY(18px) scale(.6)}35%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.15)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
     <Box onClickCapture={handleButtonSound} w="100%" maxW="432px" h={{base:'100dvh',md:'min(860px, calc(100dvh - 32px))'}} maxH={{base:'100dvh',md:'calc(100dvh - 32px)'}} bg="#06080a" borderRadius={{base:0,md:'10px'}} overflow="hidden" position="relative" borderWidth={{base:0,md:'1px'}} borderColor="rgba(198,202,204,.30)" boxShadow="0 26px 80px rgba(0,0,0,.78), inset 0 0 70px rgba(255,255,255,.018)">
-      <audio ref={menuAudioRef} src={menuMusicSrc} preload="auto" loop/>
+      <audio ref={menuAudioRef} src={menuMusicSrc} preload="auto" loop autoPlay={soundOn&&menu&&!gameover}/>
       {menu&&<Flex position="absolute" inset={0} zIndex={40} bgImage={`linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.12) 32%,rgba(2,3,4,.58) 58%,rgba(2,3,4,.92) 76%,#020304 100%), url("${menuVisualSrc}")`} bgSize="cover" bgRepeat="no-repeat" bgPosition="center center" bgColor="#020304" direction="column" overflow="hidden">
         <Box position="absolute" inset={0} pointerEvents="none" bg="radial-gradient(circle at 50% 12%, rgba(255,255,255,.18), transparent 28%), linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))"/>
         <Box position="absolute" top={0} left="50%" transform="translateX(-50%)" w={{base:'54%',md:'46%'}} h="68%" pointerEvents="none" bg="linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04) 34%,transparent 82%)" filter="blur(12px)" opacity={.54}/>

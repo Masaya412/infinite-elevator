@@ -278,3 +278,8 @@ git push origin main
 
 ## v43 start visual swap
 - スタート画面の画像を新しい bright anime-style title visual に差し替え
+
+## v44 startup BGM
+- スタート画面表示直後にBGMの自動再生を試行
+- 自動再生がブラウザにブロックされた場合は最初の pointer/touch/key 操作で即再生
+- audio要素にも autoPlay を設定し、起動直後の再生開始を優先
