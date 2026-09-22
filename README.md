@@ -287,3 +287,11 @@ git push origin main
 ## v45 start image hard replacement
 - Removed old dark title images
 - Uses public/start-screen-v45.png exclusively for the start screen
+
+## v46 BGM / event polish
+- スタートBGMを起動時に `new Audio()` で常駐生成し、即時再生を試行。自動再生が拒否された環境では pointer/touch/key/click ごとに再試行。
+- 究極のルーレットは当選内容で停止した後、約2秒その結果を表示してから報酬・地獄遷移へ進む。
+- アンケート娘の重み表示を削除し、女の子の会話 → 集計 → 票数発表 → 勝敗の段階演出を追加。
+- 天叢雲剣を「強運の天叢雲剣」へ改名。
+- ATMをTier 4からTier 2へ移動。
+- お店チケットのショップ価格を0円に変更。
