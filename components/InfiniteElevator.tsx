@@ -574,6 +574,75 @@ export default function InfiniteElevator(){
     } else {if((type||pick(['ULTIMATE_ROULETTE','GOD']))==='ULTIMATE_ROULETTE'){setUltimateMessage('???');setUltimateSpinning(false);show({tier,title:'究極のルーレット',desc:'神々の気まぐれ。究極ルーレットに挑むか？',result:'運命のルーレット',kind:'ultimate'});} else show({tier,title:'神の故郷',desc:'好きなアイテムを一つ選べます。',result:'神の加護',kind:'god'});}
   };
 
+
+  const playCatalogStage=(stage:StageCatalogEntry)=>{
+    const audio=menuAudioRef.current;
+    if(audio){audio.pause();audio.currentTime=0;}
+    playSfx('start',soundOn);
+    setScoreSubmitted(false);
+    setForgeUsed(false);
+    setGameover(false);
+    setMenu(false);
+    setDoors(true);
+    setMoving(false);
+    setS({...baseState,highScore:s.highScore});
+    guide.onClose();
+    stagePreview.onClose();
+    setPreviewStage(null);
+
+    if(stage.title==='エレベーターホール'){
+      show({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});
+      return;
+    }
+    if(stage.title==='地獄の門'){
+      setHellDie(null);
+      setHellRolling(false);
+      setHellMessage('「5」が出れば生還。1回振るごとに残り回数を1消費する。');
+      setS(x=>({...x,inHell:true}));
+      show({tier:5,title:'地獄の門',desc:'ここは脱出判定専用フロア。サイコロで「5」を出した瞬間だけ地上へ戻れる。失敗しても挑戦は続くが、振るたびに残り回数を1消費する。',result:'脱出条件：5を出せ / 成功率 1/6',resultType:'danger',kind:'hell'});
+      return;
+    }
+
+    const stageMap:Record<string,{tier:number;type:string}>={
+      '何も無い部屋':{tier:1,type:'NOTHING'},
+      'ラッキー部屋':{tier:1,type:'LUCKY'},
+      '落ちている財布':{tier:1,type:'MONEY_FOUND'},
+      '短い階段':{tier:1,type:'STAIRS_SHORT'},
+      '2つの扉':{tier:1,type:'DOORS'},
+      '小さなお店':{tier:1,type:'SHOP_SMALL'},
+      '占い師の小部屋':{tier:1,type:'FORTUNE'},
+      '3つの怪しい小箱':{tier:1,type:'BOXES'},
+      '怪しい物々交換所':{tier:1,type:'BARTER'},
+      '運命の分岐路':{tier:1,type:'CROSSROADS'},
+      '自動販売機':{tier:2,type:'VENDING'},
+      '超ラッキー部屋':{tier:2,type:'SUPER_LUCKY'},
+      '健康の湯':{tier:2,type:'HEALTH'},
+      '小さな宝箱':{tier:2,type:'TREASURE'},
+      'ルビーの採掘場':{tier:2,type:'RUBY_MINING'},
+      '長い階段':{tier:2,type:'STAIRS_MED'},
+      '大きなお店':{tier:2,type:'SHOP_MED'},
+      '地下カードサロン':{tier:2,type:'BLACKJACK'},
+      '魔法鍛冶屋':{tier:2,type:'FORGE'},
+      '運試しの祭壇':{tier:2,type:'ALTAR'},
+      'ミステリーオークション':{tier:2,type:'MYSTERY_AUCTION'},
+      'スロットカジノ':{tier:3,type:'CASINO'},
+      '極ラッキー部屋':{tier:3,type:'SUPER_LUCKY_3'},
+      '無病の湯':{tier:3,type:'HEALTH_2'},
+      'エメラルドの採掘場':{tier:3,type:'EMERALD_MINING'},
+      '果てしなく長い階段':{tier:3,type:'STAIRS_LONG'},
+      'ホームセンター':{tier:3,type:'SHOP_LARGE'},
+      '不思議なアイテム箱':{tier:3,type:'ITEM_BOX'},
+      'ワープホール':{tier:4,type:'WARP'},
+      '神々の競売場':{tier:4,type:'AUCTION'},
+      'ダイヤモンドの採掘場':{tier:4,type:'DIAMOND_MINING'},
+      '不老不死の湯':{tier:4,type:'HEALTH_3'},
+      '究極のルーレット':{tier:5,type:'ULTIMATE_ROULETTE'},
+      '神の故郷':{tier:5,type:'GOD'}
+    };
+    const target=stageMap[stage.title];
+    if(target) executeRoom(target.tier,target.type);
+  };
+
   const setupMining=(tier:number,gem:ItemId)=>{setRocks(Array.from({length:5},()=>{const ok=Math.random()<.60;const r=Math.random();const count=ok?(r<.55?1:r<.85?2:3):0;return {gem:ok?gem:null,count,open:false}}));setPicks(2);show({tier,title:gem==='ruby'?'ルビーの採掘場':gem==='emerald'?'エメラルドの採掘場':'ダイヤモンドの採掘場',desc:'5つの岩から2つ壊そう！宝石が出るかも！',result:'岩を選んで壊そう',kind:'mining'});};
   const setupShop=(tier:number,count:number)=>{const pool=[makeItem('mirror',ri(3,5)),makeItem('ring',ri(6,9)),makeItem('shop_ticket'),makeItem('sage_gem'),makeItem('party_set'),makeItem('money_tree',ri(1,2)),makeItem('blessing_charm',ri(1,2))].sort(()=>Math.random()-.5).slice(0,count).map(item=>({item,sold:false}));setShop(pool);show({tier,title:count===1?'小さなお店':count===3?'大きなお店':'ホームセンター',desc:'アイテムの購入が可能。※宝石のみ売却できます。',result:'ショップ営業中',kind:'shop'});};
 
@@ -916,8 +985,8 @@ export default function InfiniteElevator(){
           <Bullet><b>運試しの祭壇</b>：祈る対象を1つ選び、30%でその能力が上がります。</Bullet>
         </HelpSection>
       </InfoModal>
-      <StageGuideModal ctl={guide} stages={stageCatalog} basePath={process.env.NEXT_PUBLIC_BASE_PATH||''} onPreview={(stage)=>{setPreviewStage(stage);stagePreview.onOpen();}}/>
-      <StagePreviewModal ctl={stagePreview} stage={previewStage} basePath={process.env.NEXT_PUBLIC_BASE_PATH||''}/>
+      <StageGuideModal ctl={guide} stages={stageCatalog} basePath={process.env.NEXT_PUBLIC_BASE_PATH||''} onPreview={(stage)=>{setPreviewStage(stage);stagePreview.onOpen();}} onPlay={playCatalogStage}/>
+      <StagePreviewModal ctl={stagePreview} stage={previewStage} basePath={process.env.NEXT_PUBLIC_BASE_PATH||''} onPlay={playCatalogStage}/>
       <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">
         <HelpSection title="消費アイテム">
           <Bullet><b>乱反射の鏡★n</b>：次にボタンを押した時の上昇階数を <b>n倍</b> にします。大きな上振れを狙う切り札です。</Bullet>
@@ -951,12 +1020,12 @@ export default function InfiniteElevator(){
 }
 
 function Action({title,sub,onClick}:{title:string;sub?:string;onClick:()=>void}){return <Button h="auto" minH="52px" py={2.5} px={3} bg="linear-gradient(180deg,rgba(31,34,38,.94),rgba(7,8,10,.96))" color="#eeeae1" border="1px solid" borderColor="rgba(205,207,205,.28)" borderRadius="2px" boxShadow="inset 0 1px rgba(255,255,255,.04),0 5px 14px rgba(0,0,0,.42)" _hover={{bg:'linear-gradient(180deg,#3c171b,#13090b)',color:'white',borderColor:'#9d454c'}} _active={{bg:'#13080a',color:'white',transform:'translateY(1px)'}} _focusVisible={{boxShadow:'0 0 0 2px rgba(174,72,79,.52)'}} onClick={onClick}><VStack spacing={0.5} w="100%"><Text fontFamily="heading" fontSize="sm" letterSpacing=".05em" lineHeight="1.25" fontWeight="800" color="#f0ede5" textShadow="0 2px 4px #000">{title}</Text>{sub&&<Text fontSize="10px" lineHeight="1.3" color="rgba(228,226,218,.68)" fontWeight="600">{sub}</Text>}</VStack></Button>}
-function StageGuideModal({ctl,stages,basePath,onPreview}:{ctl:ReturnType<typeof useDisclosure>;stages:StageCatalogEntry[];basePath:string;onPreview:(stage:StageCatalogEntry)=>void}){
+function StageGuideModal({ctl,stages,basePath,onPreview,onPlay}:{ctl:ReturnType<typeof useDisclosure>;stages:StageCatalogEntry[];basePath:string;onPreview:(stage:StageCatalogEntry)=>void;onPlay:(stage:StageCatalogEntry)=>void}){
   const groups=[0,1,2,3,4,5,6];
   const labels:Record<number,string>={0:'SPECIAL / START',1:'Tier 1 — Common 40%',2:'Tier 2 — Uncommon 30%',3:'Tier 3 — Rare 20%',4:'Tier 4 — Epic 9%',5:'Tier 5 — Legend 1%',6:'SPECIAL — HELL'};
-  return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered size="sm"><ModalOverlay bg="blackAlpha.900" backdropFilter="blur(7px)"/><ModalContent bg="linear-gradient(180deg,#12151a,#050607)" maxW="390px" maxH="90vh" border="1px solid rgba(218,216,208,.30)" borderRadius="3px" boxShadow="0 24px 80px rgba(0,0,0,.78)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".10em" borderBottom="1px solid rgba(170,174,176,.16)">ステージ図鑑</ModalHeader><ModalBody px={3} py={3} overflowY="auto"><Text mb={3} fontSize="10px" color="gray.400" lineHeight="1.7">全ステージの背景を一覧で確認できます。背景をタップすると大きく表示します。</Text><Stack spacing={4}>{groups.map(tier=>{const rows=stages.filter(s=>s.tier===tier);if(!rows.length)return null;return <Box key={tier}><HStack mb={2}><Box w="3px" h="14px" bg={tier>=5?'#d6b85e':tier===4?'#a44850':tier===3?'#8b5cf6':tier===2?'#2f9d76':'#77808a'}/><Text fontSize="10px" letterSpacing=".10em" fontWeight="900" color="gray.300">{labels[tier]}</Text></HStack><SimpleGrid columns={1} spacing={2}>{rows.map(stage=><Button key={`${stage.tier}-${stage.title}`} h="112px" p={0} overflow="hidden" position="relative" display="block" textAlign="left" border="1px solid rgba(210,212,210,.18)" borderRadius="3px" bg="#08090b" _hover={{borderColor:stage.accent,transform:'translateY(-1px)'}} transition="all .18s" onClick={()=>onPreview(stage)}><Box position="absolute" inset={0} bgImage={stage.image?`linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.34) 52%,rgba(0,0,0,.18) 100%), url("${basePath}/${stage.image}")`:`linear-gradient(90deg,rgba(0,0,0,.68),rgba(0,0,0,.18)), ${stage.bg}`} bgSize="cover" bgPosition="center"/><Box position="absolute" inset={0} bg="linear-gradient(180deg,transparent 35%,rgba(0,0,0,.72) 100%)"/><Box position="relative" zIndex={1} h="100%" p={3} display="flex" flexDirection="column" justifyContent="flex-end"><HStack spacing={2}><Badge bg="rgba(0,0,0,.62)" color={stage.accent} border="1px solid" borderColor={stage.accent} borderRadius="1px" fontSize="8px">{stage.tier===0?'START':stage.tier===6?'HELL':`TIER ${stage.tier}`}</Badge>{stage.label&&<Text fontSize="8px" letterSpacing=".16em" color="whiteAlpha.600">{stage.label}</Text>}</HStack><Text mt={1} fontFamily="heading" fontSize="md" color="#f3f0e8" fontWeight="800" letterSpacing=".05em" textShadow="0 2px 7px #000">{stage.title}</Text><Text mt={.5} fontSize="9px" lineHeight="1.5" color="whiteAlpha.700" noOfLines={2}>{stage.desc}</Text></Box></Button>)}</SimpleGrid></Box>})}</Stack></ModalBody><ModalFooter borderTop="1px solid rgba(170,174,176,.12)"><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
+  return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered size="sm"><ModalOverlay bg="blackAlpha.900" backdropFilter="blur(7px)"/><ModalContent bg="linear-gradient(180deg,#12151a,#050607)" maxW="390px" maxH="90vh" border="1px solid rgba(218,216,208,.30)" borderRadius="3px" boxShadow="0 24px 80px rgba(0,0,0,.78)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".10em" borderBottom="1px solid rgba(170,174,176,.16)">ステージ図鑑</ModalHeader><ModalBody px={3} py={3} overflowY="auto"><Text mb={3} fontSize="10px" color="gray.400" lineHeight="1.7">背景をタップすると大きく表示できます。「このステージをプレイ」で選んだステージを直接試遊できます。</Text><Stack spacing={4}>{groups.map(tier=>{const rows=stages.filter(s=>s.tier===tier);if(!rows.length)return null;return <Box key={tier}><HStack mb={2}><Box w="3px" h="14px" bg={tier>=5?'#d6b85e':tier===4?'#a44850':tier===3?'#8b5cf6':tier===2?'#2f9d76':'#77808a'}/><Text fontSize="10px" letterSpacing=".10em" fontWeight="900" color="gray.300">{labels[tier]}</Text></HStack><SimpleGrid columns={1} spacing={2}>{rows.map(stage=><Box key={`${stage.tier}-${stage.title}`} h="150px" overflow="hidden" position="relative" border="1px solid rgba(210,212,210,.18)" borderRadius="3px" bg="#08090b" _hover={{borderColor:stage.accent}} transition="all .18s"><Box position="absolute" inset={0} bgImage={stage.image?`linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.34) 52%,rgba(0,0,0,.18) 100%), url("${basePath}/${stage.image}")`:`linear-gradient(90deg,rgba(0,0,0,.68),rgba(0,0,0,.18)), ${stage.bg}`} bgSize="cover" bgPosition="center"/><Box position="absolute" inset={0} bg="linear-gradient(180deg,transparent 26%,rgba(0,0,0,.84) 100%)"/><Box position="relative" zIndex={1} h="100%" p={3} display="flex" flexDirection="column" justifyContent="flex-end" cursor="pointer" onClick={()=>onPreview(stage)}><HStack spacing={2}><Badge bg="rgba(0,0,0,.62)" color={stage.accent} border="1px solid" borderColor={stage.accent} borderRadius="1px" fontSize="8px">{stage.tier===0?'START':stage.tier===6?'HELL':`TIER ${stage.tier}`}</Badge>{stage.label&&<Text fontSize="8px" letterSpacing=".16em" color="whiteAlpha.600">{stage.label}</Text>}</HStack><Text mt={1} fontFamily="heading" fontSize="md" color="#f3f0e8" fontWeight="800" letterSpacing=".05em" textShadow="0 2px 7px #000">{stage.title}</Text><Text mt={.5} fontSize="9px" lineHeight="1.45" color="whiteAlpha.700" noOfLines={1}>{stage.desc}</Text><Button mt={2} h="30px" size="xs" bg="rgba(72,22,28,.92)" color="#fff7ed" border="1px solid rgba(201,92,100,.72)" borderRadius="2px" leftIcon={<FaPlay/>} _hover={{bg:'#762a32',borderColor:'#e08087'}} onClick={(e)=>{e.stopPropagation();onPlay(stage)}}>このステージをプレイ</Button></Box></Box>)}</SimpleGrid></Box>})}</Stack></ModalBody><ModalFooter borderTop="1px solid rgba(170,174,176,.12)"><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
 }
-function StagePreviewModal({ctl,stage,basePath}:{ctl:ReturnType<typeof useDisclosure>;stage:StageCatalogEntry|null;basePath:string}){if(!stage)return null;return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered size="sm"><ModalOverlay bg="rgba(0,0,0,.88)" backdropFilter="blur(8px)"/><ModalContent overflow="hidden" bg="#050607" maxW="390px" border="1px solid rgba(218,216,208,.28)" borderRadius="3px"><Box position="relative" h="420px" bgImage={stage.image?`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.14) 52%,rgba(0,0,0,.88) 100%), url("${basePath}/${stage.image}")`:`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.14) 52%,rgba(0,0,0,.88) 100%), ${stage.bg}`} bgSize="cover" bgPosition="center"><Box position="absolute" inset={0} bg="radial-gradient(circle at 50% 20%,rgba(255,255,255,.08),transparent 32%)"/><Box position="absolute" left={4} right={4} bottom={4}><Badge bg="rgba(0,0,0,.68)" color={stage.accent} border="1px solid" borderColor={stage.accent} borderRadius="1px">{stage.tier===0?'START':stage.tier===6?'HELL':`TIER ${stage.tier}`}</Badge><Text mt={2} fontFamily="heading" fontSize="2xl" color="#f4f0e8" fontWeight="800" textShadow="0 3px 10px #000">{stage.title}</Text><Text mt={1} fontSize="xs" lineHeight="1.8" color="whiteAlpha.800">{stage.desc}</Text></Box></Box><ModalFooter><Button w="100%" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" borderRadius="2px" _hover={{bg:'#351419'}} onClick={ctl.onClose}>図鑑へ戻る</Button></ModalFooter></ModalContent></Modal>}
+function StagePreviewModal({ctl,stage,basePath,onPlay}:{ctl:ReturnType<typeof useDisclosure>;stage:StageCatalogEntry|null;basePath:string;onPlay:(stage:StageCatalogEntry)=>void}){if(!stage)return null;return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered size="sm"><ModalOverlay bg="rgba(0,0,0,.88)" backdropFilter="blur(8px)"/><ModalContent overflow="hidden" bg="#050607" maxW="390px" border="1px solid rgba(218,216,208,.28)" borderRadius="3px"><Box position="relative" h="420px" bgImage={stage.image?`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.14) 52%,rgba(0,0,0,.88) 100%), url("${basePath}/${stage.image}")`:`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.14) 52%,rgba(0,0,0,.88) 100%), ${stage.bg}`} bgSize="cover" bgPosition="center"><Box position="absolute" inset={0} bg="radial-gradient(circle at 50% 20%,rgba(255,255,255,.08),transparent 32%)"/><Box position="absolute" left={4} right={4} bottom={4}><Badge bg="rgba(0,0,0,.68)" color={stage.accent} border="1px solid" borderColor={stage.accent} borderRadius="1px">{stage.tier===0?'START':stage.tier===6?'HELL':`TIER ${stage.tier}`}</Badge><Text mt={2} fontFamily="heading" fontSize="2xl" color="#f4f0e8" fontWeight="800" textShadow="0 3px 10px #000">{stage.title}</Text><Text mt={1} fontSize="xs" lineHeight="1.8" color="whiteAlpha.800">{stage.desc}</Text></Box></Box><ModalFooter gap={2}><Button flex="1" bg="rgba(72,22,28,.92)" color="#fff7ed" border="1px solid rgba(201,92,100,.72)" borderRadius="2px" leftIcon={<FaPlay/>} _hover={{bg:'#762a32'}} onClick={()=>onPlay(stage)}>このステージをプレイ</Button><Button flex="1" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" borderRadius="2px" _hover={{bg:'#351419'}} onClick={ctl.onClose}>図鑑へ戻る</Button></ModalFooter></ModalContent></Modal>}
 
 function InfoModal({ctl,title,color,children}:{ctl:ReturnType<typeof useDisclosure>;title:string;color:string;children:React.ReactNode}){return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#14171b,#07080a)" maxW="360px" border="1px solid" borderColor="rgba(218,216,208,.30)" borderRadius="2px" boxShadow="0 24px 80px rgba(0,0,0,.72)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".09em" borderBottom="1px solid rgba(170,174,176,.16)">{title}</ModalHeader><ModalBody maxH="68vh" overflowY="auto"><Stack fontSize="xs" color="rgba(230,228,220,.72)" lineHeight="1.8" spacing={3}>{children}</Stack></ModalBody><ModalFooter><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>}
 
