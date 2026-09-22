@@ -382,6 +382,7 @@ export default function InfiniteElevator(){
   const menuAudioRef=useRef<HTMLAudioElement|null>(null);
   const menuMusicSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/autumnbell.mp3`;
   const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/title-visual-v2.png`;
+  const elevatorHallSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/elevator-hall.png`;
 
   const playMenuMusic=()=>{
     const audio=menuAudioRef.current;
@@ -755,6 +756,7 @@ export default function InfiniteElevator(){
     return {bg:tierMeta[Math.min(4,Math.max(0,room.tier-1))].bg,accent:'rgba(255,255,255,.05)',label:''};
   },[room,s.inHell]);
 
+  const isElevatorHall=room.title==='エレベーターホール';
   const resultColor=room.resultType==='success'?'green':room.resultType==='danger'?'red':room.resultType==='gold'?'yellow':'gray';
   const tier=tierMeta[Math.min(4,Math.max(0,room.tier-1))];
   const finalMode=s.turnsLeft<=0 && !moving && !gameover;
@@ -792,9 +794,10 @@ export default function InfiniteElevator(){
         </Box>
 
         <Flex flex="1" minH={0} position="relative" p={2} align="center" justify="center" bg={roomAtmosphere.bg} overflow="hidden">
-          <Box position="absolute" inset={0} pointerEvents="none" bg="linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))"/>
+          {isElevatorHall&&<Box position="absolute" inset={0} pointerEvents="none" bgImage={`linear-gradient(180deg,rgba(3,4,5,.22),rgba(3,4,5,.42)), url("${elevatorHallSrc}")`} bgSize="cover" bgPosition="center center" bgRepeat="no-repeat"/>}
+          <Box position="absolute" inset={0} pointerEvents="none" bg={isElevatorHall?'linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.32)),linear-gradient(90deg,rgba(0,0,0,.44),transparent 20%,transparent 80%,rgba(0,0,0,.44))':'linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))'}/>
           <Box position="absolute" top="-8%" left="50%" transform="translateX(-50%)" w="46%" h="74%" pointerEvents="none" bg="linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.03) 38%,transparent 90%)" filter="blur(12px)" opacity={.52} animation="cathedralFlicker 5s ease-in-out infinite"/>
-          <Box position="absolute" inset={0} pointerEvents="none" opacity={.34} bgImage={`repeating-linear-gradient(90deg, transparent 0 35px, rgba(170,174,176,.07) 36px 37px),repeating-linear-gradient(0deg, transparent 0 70px, ${roomAtmosphere.accent} 71px 72px)`}/>{roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Box position="absolute" inset={0} zIndex={16} pointerEvents="none" overflow="hidden">
+          <Box position="absolute" inset={0} pointerEvents="none" opacity={isElevatorHall?.10:.34} bgImage={`repeating-linear-gradient(90deg, transparent 0 35px, rgba(170,174,176,.07) 36px 37px),repeating-linear-gradient(0deg, transparent 0 70px, ${roomAtmosphere.accent} 71px 72px)`}/>{roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Box position="absolute" inset={0} zIndex={16} pointerEvents="none" overflow="hidden">
             <Box position="absolute" inset="-18%" bg={rareArrival===5?'radial-gradient(circle,rgba(253,224,71,.48) 0%,rgba(250,204,21,.18) 28%,transparent 62%)':'radial-gradient(circle,rgba(244,63,94,.34) 0%,rgba(168,85,247,.14) 35%,transparent 65%)'} animation="rareArrival .9s ease-out both"/>
             <Center position="absolute" inset={0}>
               <Box w="118px" h="118px" rounded="full" border="3px solid" borderColor={rareArrival===5?'yellow.200':'red.300'} boxShadow={rareArrival===5?'0 0 34px rgba(253,224,71,.85), inset 0 0 28px rgba(253,224,71,.38)':'0 0 30px rgba(248,113,113,.78), inset 0 0 24px rgba(168,85,247,.32)'} animation="rareRing 1.05s ease-out both"/>
