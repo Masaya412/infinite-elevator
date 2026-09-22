@@ -24,6 +24,48 @@ const tierMeta = [
 ];
 
 
+
+type StageCatalogEntry={tier:number;title:string;desc:string;image?:string;bg:string;accent:string;label?:string};
+const stageCatalog:StageCatalogEntry[]=[
+{tier:0,title:'エレベーターホール',desc:'すべての冒険が始まる巨大昇降塔の入口。',image:'elevator-hall.png',bg:'linear-gradient(180deg,#0c1117,#020304)',accent:'#d7d2c8',label:'START'},
+{tier:1,title:'何も無い部屋',desc:'静寂だけが残る空室。',bg:'linear-gradient(145deg,#1b1d20,#08090a)',accent:'#a3a3a3'},
+{tier:1,title:'ラッキー部屋',desc:'淡い緑の光に包まれ、運気が上昇する。',bg:'radial-gradient(circle at 50% 38%,rgba(74,222,128,.35),transparent 42%),linear-gradient(180deg,#0d2a19,#060b08)',accent:'#86efac'},
+{tier:1,title:'健康の湯',desc:'落ち着いた湯気に満ちた癒やしの温泉。',bg:'radial-gradient(circle at 50% 72%,rgba(103,232,249,.28),transparent 42%),linear-gradient(180deg,#14313a,#071015)',accent:'#a5f3fc'},
+{tier:1,title:'落ちている財布',desc:'無人の金属廊下に、ぽつんと財布が落ちている。',bg:'radial-gradient(circle at 50% 70%,rgba(250,204,21,.18),transparent 25%),linear-gradient(180deg,#24200e,#090806)',accent:'#fde68a'},
+{tier:1,title:'短い階段',desc:'塔の内部を数階だけ駆け上がる古い階段。',bg:'linear-gradient(155deg,#1b2b3b,#080b10 70%)',accent:'#93c5fd'},
+{tier:1,title:'2つの扉',desc:'行き先の異なる二枚の扉が現れる分岐室。',bg:'radial-gradient(circle at 28% 50%,rgba(251,146,60,.18),transparent 30%),radial-gradient(circle at 72% 50%,rgba(96,165,250,.18),transparent 30%),linear-gradient(180deg,#24170d,#09090b)',accent:'#fdba74'},
+{tier:1,title:'小さなお店',desc:'塔の片隅で営業する小さな商店。',bg:'radial-gradient(circle at 50% 22%,rgba(250,204,21,.18),transparent 34%),linear-gradient(180deg,#2b2412,#0b0a07)',accent:'#fde68a'},
+{tier:1,title:'小さな宝箱',desc:'薄暗い床に古びた宝箱がひとつ置かれている。',bg:'radial-gradient(circle at 50% 65%,rgba(192,132,252,.24),transparent 34%),linear-gradient(180deg,#21132f,#09070d)',accent:'#d8b4fe'},
+{tier:1,title:'占い師の小部屋',desc:'紫の水晶光が揺れる神秘的な占い部屋。',bg:'radial-gradient(circle at 50% 38%,rgba(192,132,252,.34),transparent 35%),linear-gradient(180deg,#281344,#080711)',accent:'#d8b4fe'},
+{tier:1,title:'3つの怪しい小箱',desc:'赤・青・緑の小箱が並ぶ不穏な小部屋。',bg:'radial-gradient(circle at 24% 70%,rgba(248,113,113,.23),transparent 22%),radial-gradient(circle at 50% 70%,rgba(96,165,250,.22),transparent 22%),radial-gradient(circle at 76% 70%,rgba(74,222,128,.22),transparent 22%),linear-gradient(180deg,#17181b,#070809)',accent:'#e5e7eb'},
+{tier:1,title:'怪しい物々交換所',desc:'古い露店と積まれた荷物が並ぶ交換所。',bg:'radial-gradient(circle at 50% 25%,rgba(217,119,6,.18),transparent 35%),linear-gradient(180deg,#2b1b0d,#0b0805)',accent:'#fdba74'},
+{tier:1,title:'運命の分岐路',desc:'暗い塔内で二方向へ分かれる巨大通路。',bg:'linear-gradient(160deg,#172330,#070a0e 72%)',accent:'#cbd5e1'},
+{tier:2,title:'自動販売機',desc:'場違いな光を放つ古い自動販売機。',bg:'radial-gradient(circle at 50% 55%,rgba(56,189,248,.22),transparent 30%),linear-gradient(180deg,#0f2430,#071015)',accent:'#7dd3fc'},
+{tier:2,title:'超ラッキー部屋',desc:'強い緑光と粒子が舞う幸運の部屋。',bg:'radial-gradient(circle at center,rgba(74,222,128,.42),transparent 44%),linear-gradient(180deg,#0c351d,#071009)',accent:'#86efac'},
+{tier:2,title:'無病の湯',desc:'岩壁と青白い湯気に包まれた上質な地下温泉。',bg:'radial-gradient(circle at 50% 68%,rgba(125,211,252,.34),transparent 42%),linear-gradient(180deg,#173b48,#071116)',accent:'#bae6fd'},
+{tier:2,title:'ルビーの採掘場',desc:'赤い鉱脈が岩壁を走る灼熱の採掘洞。',bg:'radial-gradient(circle at 50% 58%,rgba(248,113,113,.30),transparent 38%),linear-gradient(145deg,#381717,#0c0808 70%)',accent:'#fca5a5'},
+{tier:2,title:'長い階段',desc:'高所まで延々と続く螺旋階段。',bg:'linear-gradient(155deg,#20354b,#080c12 70%)',accent:'#93c5fd'},
+{tier:2,title:'大きなお店',desc:'照明と棚が増えた本格的なショップフロア。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.22),transparent 34%),linear-gradient(180deg,#342b13,#0b0a07)',accent:'#fde68a'},
+{tier:2,title:'地下カードサロン',desc:'深緑のテーブルと低い照明が並ぶ地下サロン。',bg:'radial-gradient(circle at center,rgba(13,148,136,.28),transparent 45%),linear-gradient(180deg,#07372f,#050b0a)',accent:'#5eead4'},
+{tier:2,title:'魔法鍛冶屋',desc:'炉の橙光と火花が飛び散る鍛冶工房。',bg:'radial-gradient(circle at 50% 68%,rgba(251,146,60,.36),transparent 42%),linear-gradient(180deg,#35180b,#0d0805)',accent:'#fdba74'},
+{tier:2,title:'運試しの祭壇',desc:'金色の燭光が灯る古代祭壇。',bg:'radial-gradient(circle at 50% 38%,rgba(253,224,71,.28),transparent 40%),linear-gradient(180deg,#352b0f,#0b0a06)',accent:'#fde68a'},
+{tier:2,title:'ミステリーオークション',desc:'仮面の客席を思わせる薄暗い競売場。',bg:'radial-gradient(circle at 50% 24%,rgba(217,119,6,.24),transparent 38%),linear-gradient(180deg,#2b1a0b,#0b0805)',accent:'#fbbf24'},
+{tier:3,title:'スロットカジノ',desc:'紫とピンクのネオンが瞬く異質なカジノ。',bg:'radial-gradient(circle at 20% 18%,rgba(236,72,153,.34),transparent 32%),radial-gradient(circle at 80% 25%,rgba(139,92,246,.38),transparent 34%),linear-gradient(160deg,#200b36,#080511 70%)',accent:'#f0abfc'},
+{tier:3,title:'極ラッキー部屋',desc:'祝福の粒子と緑光が満ちた高位の幸運部屋。',bg:'radial-gradient(circle at center,rgba(74,222,128,.52),transparent 45%),linear-gradient(180deg,#0f4425,#071109)',accent:'#bbf7d0'},
+{tier:3,title:'不老不死の湯',desc:'雲海と光に包まれた幻想的な高位温泉。',bg:'radial-gradient(circle at 50% 22%,rgba(255,255,255,.18),transparent 32%),radial-gradient(circle at 50% 70%,rgba(186,230,253,.42),transparent 42%),linear-gradient(180deg,#31506c,#101724)',accent:'#e0f2fe'},
+{tier:3,title:'エメラルドの採掘場',desc:'緑の結晶が洞窟全体を照らす採掘場。',bg:'radial-gradient(circle at 50% 58%,rgba(52,211,153,.31),transparent 38%),linear-gradient(145deg,#143a2c,#080d0a 70%)',accent:'#6ee7b7'},
+{tier:3,title:'果てしなく続く階段',desc:'闇の彼方まで延びる巨大な昇塔階段。',bg:'radial-gradient(circle at 50% 10%,rgba(147,197,253,.18),transparent 30%),linear-gradient(155deg,#243a55,#070a10 74%)',accent:'#bfdbfe'},
+{tier:3,title:'ホームセンター',desc:'塔の中とは思えない巨大な物資売り場。',bg:'radial-gradient(circle at 50% 20%,rgba(250,204,21,.24),transparent 34%),linear-gradient(180deg,#3a3014,#0b0a07)',accent:'#fde68a'},
+{tier:3,title:'不思議なアイテム箱',desc:'紫金の光を漏らす豪華な箱が置かれている。',bg:'radial-gradient(circle at 50% 62%,rgba(192,132,252,.36),transparent 35%),linear-gradient(180deg,#2b1640,#09070d)',accent:'#e9d5ff'},
+{tier:4,title:'ワープホール',desc:'青紫の空間が歪み、行き先の見えない門が開く。',bg:'radial-gradient(circle at center,rgba(34,211,238,.40),rgba(168,85,247,.22) 32%,transparent 55%),linear-gradient(180deg,#082333,#0b0718)',accent:'#67e8f9'},
+{tier:4,title:'神々の競売場',desc:'黄金の柱と赤い幕に囲まれた荘厳な競売場。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.34),transparent 34%),linear-gradient(180deg,#4a2b0c,#130a05)',accent:'#fde68a'},
+{tier:4,title:'ダイヤモンドの採掘場',desc:'青白い結晶光が反射する極上の鉱山。',bg:'radial-gradient(circle at 50% 55%,rgba(34,211,238,.38),transparent 38%),linear-gradient(145deg,#123544,#080d11 70%)',accent:'#a5f3fc'},
+{tier:5,title:'究極のルーレット',desc:'金・紫・赤の光が回転する神々の遊戯場。',bg:'conic-gradient(from 0deg at 50% 50%,rgba(250,204,21,.32),rgba(168,85,247,.28),rgba(239,68,68,.26),rgba(250,204,21,.32)),radial-gradient(circle,#563008,#0a0a0d 68%)',accent:'#fde68a'},
+{tier:5,title:'神の故郷',desc:'白金の光が降り注ぐ、塔の最上位に近い聖域。',bg:'radial-gradient(circle at 50% 12%,rgba(255,255,255,.82),rgba(250,204,21,.34) 28%,transparent 58%),linear-gradient(180deg,#7a5917,#2d2409 42%,#090b10)',accent:'#fff7c2'},
+{tier:6,title:'地獄の門',desc:'赤黒い霧と灼熱の亀裂が広がる脱出専用フロア。',bg:'radial-gradient(circle at 50% 28%,rgba(185,28,28,.70),transparent 38%),linear-gradient(180deg,#3b0505,#0b0000 72%,#000)',accent:'#fca5a5',label:'HELL'}
+];
+
+
 type SfxName = 'click'|'start'|'door'|'move1'|'move2'|'move3'|'move4'|'arrive'|'success'|'fail'|'coin'|'item'|'buy'|'sell'|'mine'|'gem'|'card'|'casino'|'slotStop'|'jackpot'|'warpUp'|'warpDown'|'roulette'|'hell'|'gameover'|'discard'|'upgrade';
 type DoorChoice = 'creaky'|'silver'|'gold'|'luck'|'health'|'money';
 let audioContext: AudioContext | null = null;
@@ -378,11 +420,11 @@ export default function InfiniteElevator(){
   const [gameSpeed,setGameSpeed]=useState<1|2>(1);
   const fastTimeout=(fn:()=>void,ms:number)=>window.setTimeout(fn,ms/gameSpeed);
   const fastInterval=(fn:()=>void,ms:number)=>window.setInterval(fn,ms/gameSpeed);
-  const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure();
+  const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure(), stagePreview=useDisclosure();
+  const [previewStage,setPreviewStage]=useState<StageCatalogEntry|null>(null);
   const menuAudioRef=useRef<HTMLAudioElement|null>(null);
   const menuMusicSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/autumnbell.mp3`;
   const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/title-visual-v2.png`;
-  const elevatorHallSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/elevator-hall.png`;
 
   const playMenuMusic=()=>{
     const audio=menuAudioRef.current;
@@ -756,7 +798,6 @@ export default function InfiniteElevator(){
     return {bg:tierMeta[Math.min(4,Math.max(0,room.tier-1))].bg,accent:'rgba(255,255,255,.05)',label:''};
   },[room,s.inHell]);
 
-  const isElevatorHall=room.title==='エレベーターホール';
   const resultColor=room.resultType==='success'?'green':room.resultType==='danger'?'red':room.resultType==='gold'?'yellow':'gray';
   const tier=tierMeta[Math.min(4,Math.max(0,room.tier-1))];
   const finalMode=s.turnsLeft<=0 && !moving && !gameover;
@@ -794,10 +835,9 @@ export default function InfiniteElevator(){
         </Box>
 
         <Flex flex="1" minH={0} position="relative" p={2} align="center" justify="center" bg={roomAtmosphere.bg} overflow="hidden">
-          {isElevatorHall&&<Box position="absolute" inset={0} pointerEvents="none" bgImage={`linear-gradient(180deg,rgba(3,4,5,.22),rgba(3,4,5,.42)), url("${elevatorHallSrc}")`} bgSize="cover" bgPosition="center center" bgRepeat="no-repeat"/>}
-          <Box position="absolute" inset={0} pointerEvents="none" bg={isElevatorHall?'linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.32)),linear-gradient(90deg,rgba(0,0,0,.44),transparent 20%,transparent 80%,rgba(0,0,0,.44))':'linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))'}/>
+          <Box position="absolute" inset={0} pointerEvents="none" bg="linear-gradient(90deg,rgba(0,0,0,.52),transparent 18%,transparent 82%,rgba(0,0,0,.52))"/>
           <Box position="absolute" top="-8%" left="50%" transform="translateX(-50%)" w="46%" h="74%" pointerEvents="none" bg="linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.03) 38%,transparent 90%)" filter="blur(12px)" opacity={.52} animation="cathedralFlicker 5s ease-in-out infinite"/>
-          <Box position="absolute" inset={0} pointerEvents="none" opacity={isElevatorHall?.10:.34} bgImage={`repeating-linear-gradient(90deg, transparent 0 35px, rgba(170,174,176,.07) 36px 37px),repeating-linear-gradient(0deg, transparent 0 70px, ${roomAtmosphere.accent} 71px 72px)`}/>{roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Box position="absolute" inset={0} zIndex={16} pointerEvents="none" overflow="hidden">
+          <Box position="absolute" inset={0} pointerEvents="none" opacity={.34} bgImage={`repeating-linear-gradient(90deg, transparent 0 35px, rgba(170,174,176,.07) 36px 37px),repeating-linear-gradient(0deg, transparent 0 70px, ${roomAtmosphere.accent} 71px 72px)`}/>{roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Box position="absolute" inset={0} zIndex={16} pointerEvents="none" overflow="hidden">
             <Box position="absolute" inset="-18%" bg={rareArrival===5?'radial-gradient(circle,rgba(253,224,71,.48) 0%,rgba(250,204,21,.18) 28%,transparent 62%)':'radial-gradient(circle,rgba(244,63,94,.34) 0%,rgba(168,85,247,.14) 35%,transparent 65%)'} animation="rareArrival .9s ease-out both"/>
             <Center position="absolute" inset={0}>
               <Box w="118px" h="118px" rounded="full" border="3px solid" borderColor={rareArrival===5?'yellow.200':'red.300'} boxShadow={rareArrival===5?'0 0 34px rgba(253,224,71,.85), inset 0 0 28px rgba(253,224,71,.38)':'0 0 30px rgba(248,113,113,.78), inset 0 0 24px rgba(168,85,247,.32)'} animation="rareRing 1.05s ease-out both"/>
@@ -839,32 +879,8 @@ export default function InfiniteElevator(){
           <Bullet><b>運試しの祭壇</b>：祈る対象を1つ選び、30%でその能力が上がります。</Bullet>
         </HelpSection>
       </InfoModal>
-      <InfoModal ctl={guide} title="ステージ図鑑" color="cyan">
-        <HelpSection title="Tier 1 〔40%〕 基本フロア">
-          <Bullet>最も出やすい階層。ラッキー部屋、健康の湯、短い階段、小さなお店、宝箱などが中心です。</Bullet>
-          <Bullet>序盤の立て直しや、運気・所持金の土台作りに向いています。</Bullet>
-        </HelpSection>
-        <HelpSection title="Tier 2 〔30%〕 発展フロア">
-          <Bullet>ブラックジャック、魔法鍛冶屋、運試しの祭壇、ルビー採掘場、ミステリーオークションなどが登場します。</Bullet>
-          <Bullet>強いアイテムを作ったり、ここから一気に資金と戦力を伸ばせます。</Bullet>
-        </HelpSection>
-        <HelpSection title="Tier 3 〔20%〕 レアフロア">
-          <Bullet>スロットカジノ、エメラルド採掘場、不思議なアイテム箱、極ラッキー部屋などが出現します。</Bullet>
-          <Bullet>ハイリスク・ハイリターンのイベントが増え、ゲームが大きく動きやすい層です。</Bullet>
-        </HelpSection>
-        <HelpSection title="Tier 4 〔9%〕 超レアフロア">
-          <Bullet>ワープホール、神々の競売場、ダイヤモンド採掘場が中心です。</Bullet>
-          <Bullet>一気に階数や資産を動かせる強力なイベントが揃っています。</Bullet>
-        </HelpSection>
-        <HelpSection title="Tier 5 〔1%〕 伝説フロア">
-          <Bullet>「究極のルーレット」または「神の故郷」が出現します。</Bullet>
-          <Bullet>最高クラスの恩恵や、大逆転級の展開が期待できる特別な階層です。</Bullet>
-        </HelpSection>
-        <HelpSection title="補足：扉と分岐の部屋">
-          <Bullet>2つの扉の部屋では、毎回6種類の扉の中からランダムで2種類だけ出現します。</Bullet>
-          <Bullet>扉の種類によって、運気系・健康系・採掘系・高Tier確定など進める先が変わります。</Bullet>
-        </HelpSection>
-      </InfoModal>
+      <StageGuideModal ctl={guide} stages={stageCatalog} basePath={process.env.NEXT_PUBLIC_BASE_PATH||''} onPreview={(stage)=>{setPreviewStage(stage);stagePreview.onOpen();}}/>
+      <StagePreviewModal ctl={stagePreview} stage={previewStage} basePath={process.env.NEXT_PUBLIC_BASE_PATH||''}/>
       <InfoModal ctl={itemGuide} title="アイテム図鑑" color="purple">
         <HelpSection title="消費アイテム">
           <Bullet><b>乱反射の鏡★n</b>：次にボタンを押した時の上昇階数を <b>n倍</b> にします。大きな上振れを狙う切り札です。</Bullet>
@@ -898,6 +914,13 @@ export default function InfiniteElevator(){
 }
 
 function Action({title,sub,onClick}:{title:string;sub?:string;onClick:()=>void}){return <Button h="auto" minH="52px" py={2.5} px={3} bg="linear-gradient(180deg,rgba(31,34,38,.94),rgba(7,8,10,.96))" color="#eeeae1" border="1px solid" borderColor="rgba(205,207,205,.28)" borderRadius="2px" boxShadow="inset 0 1px rgba(255,255,255,.04),0 5px 14px rgba(0,0,0,.42)" _hover={{bg:'linear-gradient(180deg,#3c171b,#13090b)',color:'white',borderColor:'#9d454c'}} _active={{bg:'#13080a',color:'white',transform:'translateY(1px)'}} _focusVisible={{boxShadow:'0 0 0 2px rgba(174,72,79,.52)'}} onClick={onClick}><VStack spacing={0.5} w="100%"><Text fontFamily="heading" fontSize="sm" letterSpacing=".05em" lineHeight="1.25" fontWeight="800" color="#f0ede5" textShadow="0 2px 4px #000">{title}</Text>{sub&&<Text fontSize="10px" lineHeight="1.3" color="rgba(228,226,218,.68)" fontWeight="600">{sub}</Text>}</VStack></Button>}
+function StageGuideModal({ctl,stages,basePath,onPreview}:{ctl:ReturnType<typeof useDisclosure>;stages:StageCatalogEntry[];basePath:string;onPreview:(stage:StageCatalogEntry)=>void}){
+  const groups=[0,1,2,3,4,5,6];
+  const labels:Record<number,string>={0:'SPECIAL / START',1:'Tier 1 — Common 40%',2:'Tier 2 — Uncommon 30%',3:'Tier 3 — Rare 20%',4:'Tier 4 — Epic 9%',5:'Tier 5 — Legend 1%',6:'SPECIAL — HELL'};
+  return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered size="sm"><ModalOverlay bg="blackAlpha.900" backdropFilter="blur(7px)"/><ModalContent bg="linear-gradient(180deg,#12151a,#050607)" maxW="390px" maxH="90vh" border="1px solid rgba(218,216,208,.30)" borderRadius="3px" boxShadow="0 24px 80px rgba(0,0,0,.78)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".10em" borderBottom="1px solid rgba(170,174,176,.16)">ステージ図鑑</ModalHeader><ModalBody px={3} py={3} overflowY="auto"><Text mb={3} fontSize="10px" color="gray.400" lineHeight="1.7">全ステージの背景を一覧で確認できます。背景をタップすると大きく表示します。</Text><Stack spacing={4}>{groups.map(tier=>{const rows=stages.filter(s=>s.tier===tier);if(!rows.length)return null;return <Box key={tier}><HStack mb={2}><Box w="3px" h="14px" bg={tier>=5?'#d6b85e':tier===4?'#a44850':tier===3?'#8b5cf6':tier===2?'#2f9d76':'#77808a'}/><Text fontSize="10px" letterSpacing=".10em" fontWeight="900" color="gray.300">{labels[tier]}</Text></HStack><SimpleGrid columns={1} spacing={2}>{rows.map(stage=><Button key={`${stage.tier}-${stage.title}`} h="112px" p={0} overflow="hidden" position="relative" display="block" textAlign="left" border="1px solid rgba(210,212,210,.18)" borderRadius="3px" bg="#08090b" _hover={{borderColor:stage.accent,transform:'translateY(-1px)'}} transition="all .18s" onClick={()=>onPreview(stage)}><Box position="absolute" inset={0} bgImage={stage.image?`linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.34) 52%,rgba(0,0,0,.18) 100%), url("${basePath}/${stage.image}")`:`linear-gradient(90deg,rgba(0,0,0,.68),rgba(0,0,0,.18)), ${stage.bg}`} bgSize="cover" bgPosition="center"/><Box position="absolute" inset={0} bg="linear-gradient(180deg,transparent 35%,rgba(0,0,0,.72) 100%)"/><Box position="relative" zIndex={1} h="100%" p={3} display="flex" flexDirection="column" justifyContent="flex-end"><HStack spacing={2}><Badge bg="rgba(0,0,0,.62)" color={stage.accent} border="1px solid" borderColor={stage.accent} borderRadius="1px" fontSize="8px">{stage.tier===0?'START':stage.tier===6?'HELL':`TIER ${stage.tier}`}</Badge>{stage.label&&<Text fontSize="8px" letterSpacing=".16em" color="whiteAlpha.600">{stage.label}</Text>}</HStack><Text mt={1} fontFamily="heading" fontSize="md" color="#f3f0e8" fontWeight="800" letterSpacing=".05em" textShadow="0 2px 7px #000">{stage.title}</Text><Text mt={.5} fontSize="9px" lineHeight="1.5" color="whiteAlpha.700" noOfLines={2}>{stage.desc}</Text></Box></Button>)}</SimpleGrid></Box>})}</Stack></ModalBody><ModalFooter borderTop="1px solid rgba(170,174,176,.12)"><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>
+}
+function StagePreviewModal({ctl,stage,basePath}:{ctl:ReturnType<typeof useDisclosure>;stage:StageCatalogEntry|null;basePath:string}){if(!stage)return null;return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered size="sm"><ModalOverlay bg="rgba(0,0,0,.88)" backdropFilter="blur(8px)"/><ModalContent overflow="hidden" bg="#050607" maxW="390px" border="1px solid rgba(218,216,208,.28)" borderRadius="3px"><Box position="relative" h="420px" bgImage={stage.image?`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.14) 52%,rgba(0,0,0,.88) 100%), url("${basePath}/${stage.image}")`:`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.14) 52%,rgba(0,0,0,.88) 100%), ${stage.bg}`} bgSize="cover" bgPosition="center"><Box position="absolute" inset={0} bg="radial-gradient(circle at 50% 20%,rgba(255,255,255,.08),transparent 32%)"/><Box position="absolute" left={4} right={4} bottom={4}><Badge bg="rgba(0,0,0,.68)" color={stage.accent} border="1px solid" borderColor={stage.accent} borderRadius="1px">{stage.tier===0?'START':stage.tier===6?'HELL':`TIER ${stage.tier}`}</Badge><Text mt={2} fontFamily="heading" fontSize="2xl" color="#f4f0e8" fontWeight="800" textShadow="0 3px 10px #000">{stage.title}</Text><Text mt={1} fontSize="xs" lineHeight="1.8" color="whiteAlpha.800">{stage.desc}</Text></Box></Box><ModalFooter><Button w="100%" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" borderRadius="2px" _hover={{bg:'#351419'}} onClick={ctl.onClose}>図鑑へ戻る</Button></ModalFooter></ModalContent></Modal>}
+
 function InfoModal({ctl,title,color,children}:{ctl:ReturnType<typeof useDisclosure>;title:string;color:string;children:React.ReactNode}){return <Modal isOpen={ctl.isOpen} onClose={ctl.onClose} isCentered><ModalOverlay bg="blackAlpha.800" backdropFilter="blur(5px)"/><ModalContent bg="linear-gradient(180deg,#14171b,#07080a)" maxW="360px" border="1px solid" borderColor="rgba(218,216,208,.30)" borderRadius="2px" boxShadow="0 24px 80px rgba(0,0,0,.72)"><ModalHeader fontFamily="heading" color="#eee9df" letterSpacing=".09em" borderBottom="1px solid rgba(170,174,176,.16)">{title}</ModalHeader><ModalBody maxH="68vh" overflowY="auto"><Stack fontSize="xs" color="rgba(230,228,220,.72)" lineHeight="1.8" spacing={3}>{children}</Stack></ModalBody><ModalFooter><Button w="100%" borderRadius="2px" bg="#111317" color="#eee9df" border="1px solid rgba(205,207,205,.24)" _hover={{bg:'#351419',borderColor:'#8f3940'}} onClick={ctl.onClose}>閉じる</Button></ModalFooter></ModalContent></Modal>}
 
 function HelpSection({title,children}:{title:string;children:React.ReactNode}){return <Box bg="rgba(255,255,255,.03)" border="1px solid rgba(205,207,205,.12)" borderRadius="3px" px={3} py={2.5}><Text mb={2} fontFamily="heading" fontSize="sm" color="#eee9df" letterSpacing=".05em">{title}</Text><Stack spacing={1.5}>{children}</Stack></Box>}
