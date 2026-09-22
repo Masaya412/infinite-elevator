@@ -295,3 +295,10 @@ git push origin main
 - 天叢雲剣を「強運の天叢雲剣」へ改名。
 - ATMをTier 4からTier 2へ移動。
 - お店チケットのショップ価格を0円に変更。
+
+## v47 startup BGM controller
+- スタートBGM管理を InfiniteElevator 本体から分離
+- `components/BgmController.tsx` を追加し `app/layout.tsx` に常駐
+- ページ起動直後に `new Audio()` → `play()` を試行
+- autoplay拒否時は pointerdown / touchstart / keydown / click で再試行
+- ゲーム開始時はカスタムイベントでメニューBGM停止、メニュー復帰時は再開

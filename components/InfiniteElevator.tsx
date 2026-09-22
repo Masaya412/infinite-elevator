@@ -136,7 +136,6 @@ let bgmMood:BgmMood|null=null;
 let bgmTier=1;
 let bgmStep=0;
 let bgmMaster:GainNode|null=null;
-const MENU_MUSIC_VOLUME=.58;
 const IN_GAME_BGM_VOLUME=1;
 function stopBgm(){
   if(typeof window!=='undefined' && bgmTimer!==null) window.clearInterval(bgmTimer);
@@ -437,18 +436,7 @@ export default function InfiniteElevator(){
   const fastInterval=(fn:()=>void,ms:number)=>window.setInterval(fn,ms/gameSpeed);
   const rules=useDisclosure(), guide=useDisclosure(), itemGuide=useDisclosure(), rank=useDisclosure(), stagePreview=useDisclosure();
   const [previewStage,setPreviewStage]=useState<StageCatalogEntry|null>(null);
-  const menuAudioRef=useRef<HTMLAudioElement|null>(null);
-  const menuMusicAllowedRef=useRef(true);
-  const menuMusicSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/autumnbell.mp3`;
   const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/start-screen-v45.png`;
-
-  const playMenuMusic=()=>{
-    const audio=menuAudioRef.current;
-    if(!audio||!soundOn||!menu||gameover)return;
-    audio.volume=MENU_MUSIC_VOLUME;
-    const result=audio.play();
-    if(result) void result.catch(()=>{});
-  };
 
   useEffect(()=>{
     const h=Number(localStorage.getItem('infinite_elevator_highscore')||'1');
@@ -471,55 +459,10 @@ export default function InfiniteElevator(){
     return ()=>unsub();
   },[]);
 
-  // 「7つの魔法」と同じ考え方で、BGM用Audioをアプリ起動時に常駐生成する。
   useEffect(()=>{
-    const audio=new Audio(menuMusicSrc);
-    audio.loop=true;
-    audio.preload='auto';
-    audio.volume=MENU_MUSIC_VOLUME;
-    menuAudioRef.current=audio;
-
-    const attempt=()=>{
-      if(!menuMusicAllowedRef.current)return;
-      audio.volume=MENU_MUSIC_VOLUME;
-      const result=audio.play();
-      if(result) void result.catch(()=>{});
-    };
-
-    // 起動直後に即再生を試す。ブロックされた環境ではユーザー操作のたびに再試行する。
-    attempt();
-    const pointer=()=>attempt();
-    const key=()=>attempt();
-    const click=()=>attempt();
-    window.addEventListener('pointerdown',pointer,{passive:true});
-    window.addEventListener('touchstart',pointer,{passive:true});
-    window.addEventListener('keydown',key);
-    document.addEventListener('click',click,true);
-
-    return ()=>{
-      window.removeEventListener('pointerdown',pointer);
-      window.removeEventListener('touchstart',pointer);
-      window.removeEventListener('keydown',key);
-      document.removeEventListener('click',click,true);
-      audio.pause();
-      audio.src='';
-      if(menuAudioRef.current===audio)menuAudioRef.current=null;
-    };
-  },[menuMusicSrc]);
-
-  useEffect(()=>{
-    menuMusicAllowedRef.current=menu&&!gameover&&soundOn;
-    const audio=menuAudioRef.current;
-    if(!audio)return;
-    audio.volume=MENU_MUSIC_VOLUME;
-    if(menu&&!gameover&&soundOn){
-      const result=audio.play();
-      if(result) void result.catch(()=>{});
-    }else{
-      audio.pause();
-      if(!menu) audio.currentTime=0;
-    }
+    window.dispatchEvent(new CustomEvent('infinite-elevator-menu-bgm',{detail:{enabled:menu&&!gameover&&soundOn}}));
   },[menu,gameover,soundOn]);
+
 
   useEffect(()=>{
     if(menu||gameover){stopBgm();return;}
@@ -573,7 +516,7 @@ export default function InfiniteElevator(){
     }
   };
 
-  const start=()=>{const audio=menuAudioRef.current;if(audio){audio.pause();audio.currentTime=0;}playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setAtmDeposit(0);setAtmInput('');setLegendShopUsed(false);setWarpAnimating(false);setWarpMessage('');setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
+  const start=()=>{playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setAtmDeposit(0);setAtmInput('');setLegendShopUsed(false);setWarpAnimating(false);setWarpMessage('');setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
   const end=()=>{playSfx('gameover',soundOn);setAtmDeposit(0);setAtmInput('');setGameover(true); setS(x=>{const h=Math.max(x.highScore,x.floor); localStorage.setItem('infinite_elevator_highscore',String(h)); return {...x,highScore:h};});};
 
   const triggerRoom=(forcedTier?:number,forcedType?:string)=>{
@@ -640,8 +583,6 @@ export default function InfiniteElevator(){
 
 
   const playCatalogStage=(stage:StageCatalogEntry)=>{
-    const audio=menuAudioRef.current;
-    if(audio){audio.pause();audio.currentTime=0;}
     playSfx('start',soundOn);
     setScoreSubmitted(false);
     setForgeUsed(false);
@@ -988,7 +929,7 @@ export default function InfiniteElevator(){
   const finalMode=s.turnsLeft<=0 && !moving && !gameover;
   const disabled=finalMode ? (moving||gameover||slotSpinning||bj.playing) : (moving||gameover||slotSpinning||bj.playing||s.inHell);
 
-  const handleButtonSound=(e:React.MouseEvent)=>{if(menu&&soundOn)playMenuMusic();const el=e.target as HTMLElement;if(el.closest('button'))playSfx('click',soundOn);};
+  const handleButtonSound=(e:React.MouseEvent)=>{const el=e.target as HTMLElement;if(el.closest('button'))playSfx('click',soundOn);};
 
   return <><style>{`@keyframes cathedralFlicker{0%,100%{opacity:.3}50%{opacity:.62}}@keyframes steelSweep{0%{transform:translateX(-160%)}100%{transform:translateX(160%)}}@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-7deg)}to{transform:scale(1.10) rotate(7deg)}}@keyframes hellShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}@keyframes hellRing{0%{transform:scale(.55) rotate(0deg);opacity:.9}100%{transform:scale(1.55) rotate(220deg);opacity:0}}@keyframes revealPulse{from{transform:scale(.96);filter:brightness(.95)}to{transform:scale(1.06);filter:brightness(1.35)}}@keyframes ultimateWheel{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes warpSpin{0%{transform:rotate(0deg) scale(.85);filter:brightness(1)}50%{transform:rotate(180deg) scale(1.08);filter:brightness(1.8)}100%{transform:rotate(360deg) scale(.85);filter:brightness(1)}}@keyframes ultimateFlash{0%,100%{opacity:.45;filter:brightness(1)}50%{opacity:1;filter:brightness(1.8)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{0%{opacity:0;transform:scale(.72)}45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.24)}}@keyframes rareRing{0%{opacity:0;transform:scale(.35)}35%{opacity:.95}100%{opacity:0;transform:scale(1.65)}}@keyframes rareSpark{0%{opacity:0;transform:translateY(18px) scale(.6)}35%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.15)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
     <Box onClickCapture={handleButtonSound} w="100%" maxW="432px" h={{base:'100dvh',md:'min(860px, calc(100dvh - 32px))'}} maxH={{base:'100dvh',md:'calc(100dvh - 32px)'}} bg="#06080a" borderRadius={{base:0,md:'10px'}} overflow="hidden" position="relative" borderWidth={{base:0,md:'1px'}} borderColor="rgba(198,202,204,.30)" boxShadow="0 26px 80px rgba(0,0,0,.78), inset 0 0 70px rgba(255,255,255,.018)">
