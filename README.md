@@ -283,3 +283,7 @@ git push origin main
 - スタート画面表示直後にBGMの自動再生を試行
 - 自動再生がブラウザにブロックされた場合は最初の pointer/touch/key 操作で即再生
 - audio要素にも autoPlay を設定し、起動直後の再生開始を優先
+
+## v45 start image hard replacement
+- Removed old dark title images
+- Uses public/start-screen-v45.png exclusively for the start screen

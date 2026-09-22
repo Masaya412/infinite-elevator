@@ -439,7 +439,7 @@ export default function InfiniteElevator(){
   const [previewStage,setPreviewStage]=useState<StageCatalogEntry|null>(null);
   const menuAudioRef=useRef<HTMLAudioElement|null>(null);
   const menuMusicSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/autumnbell.mp3`;
-  const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/title-visual-v2.png`;
+  const menuVisualSrc=`${process.env.NEXT_PUBLIC_BASE_PATH||''}/start-screen-v45.png`;
 
   const playMenuMusic=()=>{
     const audio=menuAudioRef.current;
