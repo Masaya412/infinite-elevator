@@ -57,11 +57,14 @@ const stageCatalog:StageCatalogEntry[]=[
 {tier:3,title:'果てしなく長い階段',desc:'+50〜100階進める終点の見えない巨大階段。',bg:'radial-gradient(circle at 50% 10%,rgba(147,197,253,.18),transparent 30%),linear-gradient(155deg,#243a55,#070a10 74%)',accent:'#bfdbfe'},
 {tier:3,title:'ホームセンター',desc:'塔の中とは思えない巨大な物資売り場。',bg:'radial-gradient(circle at 50% 20%,rgba(250,204,21,.24),transparent 34%),linear-gradient(180deg,#3a3014,#0b0a07)',accent:'#fde68a'},
 {tier:3,title:'不思議なアイテム箱',desc:'紫金の光を漏らす豪華な箱が置かれている。',bg:'radial-gradient(circle at 50% 62%,rgba(192,132,252,.36),transparent 35%),linear-gradient(180deg,#2b1640,#09070d)',accent:'#e9d5ff'},
+{tier:3,title:'アンケート娘',desc:'2択アンケートで多数派を当てる不思議な調査室。',bg:'radial-gradient(circle at 50% 35%,rgba(244,114,182,.28),transparent 38%),linear-gradient(180deg,#32172a,#0d0810)',accent:'#f9a8d4'},
 {tier:4,title:'ワープホール',desc:'青紫の空間が歪み、行き先の見えない門が開く。',bg:'radial-gradient(circle at center,rgba(34,211,238,.40),rgba(168,85,247,.22) 32%,transparent 55%),linear-gradient(180deg,#082333,#0b0718)',accent:'#67e8f9'},
 {tier:4,title:'神々の競売場',desc:'黄金の柱と赤い幕に囲まれた荘厳な競売場。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.34),transparent 34%),linear-gradient(180deg,#4a2b0c,#130a05)',accent:'#fde68a'},
 {tier:4,title:'ダイヤモンドの採掘場',desc:'青白い結晶光が反射する極上の鉱山。',bg:'radial-gradient(circle at 50% 55%,rgba(34,211,238,.38),transparent 38%),linear-gradient(145deg,#123544,#080d11 70%)',accent:'#a5f3fc'},
+{tier:4,title:'ATM',desc:'お金を預け、次の遭遇時に2倍で受け取れる特殊端末。',bg:'radial-gradient(circle at 50% 45%,rgba(34,211,238,.26),transparent 36%),linear-gradient(180deg,#102631,#071014)',accent:'#67e8f9'},
 {tier:5,title:'究極のルーレット',desc:'金・紫・赤の光が回転する神々の遊戯場。',bg:'conic-gradient(from 0deg at 50% 50%,rgba(250,204,21,.32),rgba(168,85,247,.28),rgba(239,68,68,.26),rgba(250,204,21,.32)),radial-gradient(circle,#563008,#0a0a0d 68%)',accent:'#fde68a'},
 {tier:5,title:'神の故郷',desc:'白金の光が降り注ぐ、塔の最上位に近い聖域。',bg:'radial-gradient(circle at 50% 12%,rgba(255,255,255,.82),rgba(250,204,21,.34) 28%,transparent 58%),linear-gradient(180deg,#7a5917,#2d2409 42%,#090b10)',accent:'#fff7c2'},
+{tier:5,title:'伝説の神器商店',desc:'ここでしか買えない三種の神器を扱う伝説級の商店。',bg:'radial-gradient(circle at 50% 18%,rgba(250,204,21,.55),transparent 38%),linear-gradient(180deg,#5a3b0c,#180f05)',accent:'#fde68a'},
 {tier:6,title:'地獄の門',desc:'赤黒い霧と灼熱の亀裂が広がる脱出専用フロア。',bg:'radial-gradient(circle at 50% 28%,rgba(185,28,28,.70),transparent 38%),linear-gradient(180deg,#3b0505,#0b0000 72%,#000)',accent:'#fca5a5',label:'HELL'}
 ];
 
@@ -370,6 +373,9 @@ function makeItem(id:ItemId,n=1):Item{
     case 'ruby': return {id,name:'ルビー',type:'gem',count:n,desc:'ショップで300円で売れる宝石。',price:300,icon:FaGem};
     case 'emerald': return {id,name:'エメラルド',type:'gem',count:n,desc:'ショップで500円で売れる宝石。',price:500,icon:FaGem};
     case 'diamond': return {id,name:'ダイヤモンド',type:'gem',count:n,desc:'ショップで1000円で売れる宝石。',price:1000,icon:FaGem};
+    case 'yata_mirror': return {id,name:'乱反射の八咫鏡',type:'passive',desc:'持っている間、ボタンで出た上昇階数が常に2倍になる伝説の神器。',price:5000,icon:FaWandMagicSparkles};
+    case 'kusanagi': return {id,name:'天叢雲剣',type:'passive',desc:'持っている間、ボタンを押すたびに運気+2・所持金+400円。',price:3000,icon:FaBolt};
+    case 'immortal_mag': return {id,name:'不老の八尺瓊勾玉',type:'passive',desc:'持っている間、Tier4以上の部屋が出るまで残り回数が減らない。Tier4以上に到着すると消失。',price:3000,icon:FaGem};
   }
 }
 const baseState:State={floor:1,turnsLeft:10,luck:0,money:1000,highScore:1,items:[],logs:[],ringBuff:{active:false,turns:0,amount:0},mirrorMultiplier:1,partySet:false,inHell:false};
@@ -386,6 +392,9 @@ function itemPalette(item:Item){
     case 'ruby': return {bg:'rgba(220,38,38,.18)',border:'red.500',icon:'red.300',text:'red.100'};
     case 'emerald': return {bg:'rgba(5,150,105,.18)',border:'green.500',icon:'green.300',text:'green.100'};
     case 'diamond': return {bg:'rgba(14,165,233,.18)',border:'blue.400',icon:'blue.200',text:'blue.100'};
+    case 'yata_mirror': return {bg:'rgba(250,204,21,.18)',border:'yellow.400',icon:'yellow.200',text:'yellow.100'};
+    case 'kusanagi': return {bg:'rgba(239,68,68,.18)',border:'red.400',icon:'orange.200',text:'orange.100'};
+    case 'immortal_mag': return {bg:'rgba(192,132,252,.20)',border:'purple.400',icon:'purple.200',text:'purple.100'};
     default: return {bg:'rgba(55,65,81,.9)',border:'gray.500',icon:'gray.200',text:'white'};
   }
 }
@@ -405,6 +414,11 @@ export default function InfiniteElevator(){
   const [itemBoxOpening,setItemBoxOpening]=useState(false);
   const [ultimateSpinning,setUltimateSpinning]=useState(false);
   const [eventAnimating,setEventAnimating]=useState(false);
+  const [atmDeposit,setAtmDeposit]=useState(0);
+  const [atmInput,setAtmInput]=useState('');
+  const [legendShopUsed,setLegendShopUsed]=useState(false);
+  const [warpAnimating,setWarpAnimating]=useState(false);
+  const [warpMessage,setWarpMessage]=useState('');
   const [ultimateMessage,setUltimateMessage]=useState('???');
   const [bjPhase,setBjPhase]=useState('');
   const [hellRolling,setHellRolling]=useState(false);
@@ -522,13 +536,15 @@ export default function InfiniteElevator(){
     }
   };
 
-  const start=()=>{const audio=menuAudioRef.current;if(audio){audio.pause();audio.currentTime=0;}playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
-  const end=()=>{playSfx('gameover',soundOn);setGameover(true); setS(x=>{const h=Math.max(x.highScore,x.floor); localStorage.setItem('infinite_elevator_highscore',String(h)); return {...x,highScore:h};});};
+  const start=()=>{const audio=menuAudioRef.current;if(audio){audio.pause();audio.currentTime=0;}playSfx('start',soundOn);setScoreSubmitted(false);setForgeUsed(false);setAtmDeposit(0);setAtmInput('');setLegendShopUsed(false);setWarpAnimating(false);setWarpMessage('');setS({...baseState,highScore:s.highScore});setMenu(false);setGameover(false);setDoors(true);setRoom({tier:1,title:'エレベーターホール',desc:'エレベーターに乗りました。ボタンを押して上の階を目指しましょう！'});};
+  const end=()=>{playSfx('gameover',soundOn);setAtmDeposit(0);setAtmInput('');setGameover(true); setS(x=>{const h=Math.max(x.highScore,x.floor); localStorage.setItem('infinite_elevator_highscore',String(h)); return {...x,highScore:h};});};
 
   const triggerRoom=(forcedTier?:number,forcedType?:string)=>{
-    let tier=forcedTier||1; if(!forcedTier){const r=Math.random()*100;tier=r<40?1:r<70?2:r<90?3:r<99?4:5;} if(forcedShop){tier=1;forcedType='SHOP_SMALL';setForcedShop(false);} executeRoom(tier,forcedType);
+    let tier=forcedTier||1; if(!forcedTier){const r=Math.random()*100;tier=r<40?1:r<70?2:r<90?3:r<99?4:5;} if(forcedShop){tier=1;forcedType='SHOP_SMALL';setForcedShop(false);}
+    executeRoom(tier,forcedType);
   };
   const executeRoom=(tier:number,type?:string)=>{
+    if(tier>=4){setS(current=>{const had=current.items.some(i=>i.id==='immortal_mag');return had?{...current,items:current.items.filter(i=>i.id!=='immortal_mag'),logs:['不老の八尺瓊勾玉が役目を終えて消失した。',...current.logs]}:current;});}
     if(tier===1){const t=type||pick(['NOTHING','LUCKY','MONEY_FOUND','STAIRS_SHORT','DOORS','SHOP_SMALL','FORTUNE','BOXES','BARTER','CROSSROADS']);
       if(t==='NOTHING')show({tier,title:'何も無い部屋',desc:'静けさが漂っている。',result:'変化なし'});
       else if(t==='LUCKY'){const g=ri(1,3);show({tier,title:'ラッキー部屋',desc:'淡い緑の光がゆっくりと集まってくる。',result:'祝福の光に触れてみよう',kind:'reveal',payload:{type:'luck',amount:g}});}
@@ -559,19 +575,30 @@ export default function InfiniteElevator(){
       else if(t==='FORGE'){setForgeUsed(false);show({tier,title:'魔法鍛冶屋',desc:'鏡や指輪の性能を無料で1つだけ強化(+1~3)します！',result:'この部屋では1回だけ強化できます',kind:'forge'});}
       else if(t==='ALTAR')show({tier,title:'運試しの祭壇',desc:'何を捧げるかで加護が変わる。',result:'祭壇に祈る',kind:'altar'});
       else show({tier,title:'ミステリーオークション',desc:'謎の袋が出品中。(1000円)',result:'競り参加',kind:'mystery'});
-    } else if(tier===3){const t=type||pick(['CASINO','SUPER_LUCKY_3','HEALTH_2','EMERALD_MINING','STAIRS_LONG','SHOP_LARGE','ITEM_BOX']);
+    } else if(tier===3){const t=type||pick(['CASINO','SUPER_LUCKY_3','HEALTH_2','EMERALD_MINING','STAIRS_LONG','SHOP_LARGE','ITEM_BOX','SURVEY_GIRL']);
       if(t==='CASINO'){setCasinoSpinsLeft(10);setSlotMessage('');setSlot(['❔','❔','❔']);setSlotWin(false);show({tier,title:'スロットカジノ',desc:'1回の訪問につき最大10スピン。ルビー5倍・エメラルド10倍・ダイヤ30倍。',result:'CASINO OPEN / 残り10回',kind:'casino'});} 
       else if(t==='SUPER_LUCKY_3'){const g=ri(6,8);show({tier,title:'極ラッキー部屋',desc:'強い祝福の光が部屋いっぱいに満ちていく。',result:'祝福を受け取ろう',kind:'reveal',payload:{type:'luck',amount:g}});}
       else if(t==='HEALTH_2'){const g=ri(2,3);show({tier,title:'無病の湯',desc:'青白い湯気と滝音が身体を包み込む。',result:'静かに湯へ浸かろう',kind:'reveal',payload:{type:'health',amount:g}});}
       else if(t==='EMERALD_MINING')setupMining(tier,'emerald');
       else if(t==='STAIRS_LONG'){const g=ri(50,100);show({tier,title:'果てしなく長い階段',desc:'終点の見えない巨大階段が闇の彼方まで続いている。',result:'覚悟を決めて登ろう',kind:'reveal',payload:{type:'stairs',amount:g}});}
-      else if(t==='SHOP_LARGE')setupShop(tier,5); else {setItemBoxOpening(false);show({tier,title:'不思議なアイテム箱',desc:'豪華な箱が置いてある。中には特別なアイテムが入っていそうだ。',result:'箱を開けてみよう',kind:'itembox'});}
-    } else if(tier===4){const t=type||pick(['WARP','AUCTION','DIAMOND_MINING','HEALTH_3']);
+      else if(t==='SHOP_LARGE')setupShop(tier,5); else if(t==='SURVEY_GIRL'){const surveys=[
+        {q:'休日は外出派？おうち派？',a:'外出派',b:'おうち派',wa:48,wb:52,genre:'日常'},
+        {q:'朝型？夜型？',a:'朝型',b:'夜型',wa:30,wb:70,genre:'生活'},
+        {q:'犬派？猫派？',a:'犬派',b:'猫派',wa:52,wb:48,genre:'日常'},
+        {q:'告白するなら直接？メッセージ？',a:'直接',b:'メッセージ',wa:68,wb:32,genre:'恋愛'},
+        {q:'デートなら屋外？屋内？',a:'屋外',b:'屋内',wa:55,wb:45,genre:'恋愛'},
+        {q:'旅行なら海？山？',a:'海',b:'山',wa:62,wb:38,genre:'旅行'},
+        {q:'連絡は電話派？メッセージ派？',a:'電話',b:'メッセージ',wa:24,wb:76,genre:'日常'},
+        {q:'好きな人には自分から行く？待つ？',a:'自分から行く',b:'待つ',wa:58,wb:42,genre:'恋愛'}
+      ];const survey=pick(surveys);show({tier,title:'アンケート娘',desc:`${survey.genre}系の2択アンケートを聞かれた。多数派を当てれば運気アップ！`,result:survey.q,kind:'survey',payload:survey});}
+      else {setItemBoxOpening(false);show({tier,title:'不思議なアイテム箱',desc:'豪華な箱が置いてある。中には特別なアイテムが入っていそうだ。',result:'箱を開けてみよう',kind:'itembox'});}
+    } else if(tier===4){const t=type||pick(['WARP','AUCTION','DIAMOND_MINING','HEALTH_3','ATM']);
       if(t==='WARP')show({tier,title:'ワープホール',desc:'使うとランダムに移動できる。',result:'ワープホール現る',kind:'warp'});
       else if(t==='AUCTION')show({tier,title:'神々の競売場',desc:'最高峰の品がオークションに出品。',result:'競売開催中',kind:'auction'});
       else if(t==='DIAMOND_MINING')setupMining(tier,'diamond');
       else if(t==='HEALTH_3'){const g=ri(4,5);show({tier,title:'不老不死の湯',desc:'天空の湯から神秘的な光が立ち上っている。',result:'伝説の湯へ浸かろう',kind:'reveal',payload:{type:'health',amount:g}});}
-    } else {if((type||pick(['ULTIMATE_ROULETTE','GOD']))==='ULTIMATE_ROULETTE'){setUltimateMessage('???');setUltimateSpinning(false);show({tier,title:'究極のルーレット',desc:'神々の気まぐれ。究極ルーレットに挑むか？',result:'運命のルーレット',kind:'ultimate'});} else show({tier,title:'神の故郷',desc:'好きなアイテムを一つ選べます。',result:'神の加護',kind:'god'});}
+      else if(t==='ATM'){setAtmInput('');show({tier,title:'ATM',desc:atmDeposit>0?'以前預けたお金が満期になっている。2倍で受け取れる。':'好きな金額を預けられる特殊ATM。次にこの部屋へ来ると2倍になって戻ってくる。',result:atmDeposit>0?`預金 ${atmDeposit}円 → 受取 ${atmDeposit*2}円`:'預け入れ可能',resultType:atmDeposit>0?'gold':'neutral',kind:'atm'});}
+    } else {const t=type||pick(['ULTIMATE_ROULETTE','GOD','LEGEND_SHOP']);if(t==='ULTIMATE_ROULETTE'){setUltimateMessage('???');setUltimateSpinning(false);show({tier,title:'究極のルーレット',desc:'神々の気まぐれ。究極ルーレットに挑むか？',result:'運命のルーレット',kind:'ultimate'});} else if(t==='LEGEND_SHOP'){setLegendShopUsed(false);show({tier,title:'伝説の神器商店',desc:'この場所でしか手に入らない三種の神器を扱う。購入できるのは1回の訪問につき1つだけ。',result:'神器を1つ選べ',resultType:'gold',kind:'legendshop'});} else show({tier,title:'神の故郷',desc:'好きなアイテムを一つ選べます。',result:'神の加護',kind:'god'});}
   };
 
 
@@ -585,6 +612,7 @@ export default function InfiniteElevator(){
     setMenu(false);
     setDoors(true);
     setMoving(false);
+    setAtmDeposit(0);setAtmInput('');setLegendShopUsed(false);setWarpAnimating(false);setWarpMessage('');
     setS({...baseState,highScore:s.highScore});
     guide.onClose();
     stagePreview.onClose();
@@ -632,12 +660,15 @@ export default function InfiniteElevator(){
       '果てしなく長い階段':{tier:3,type:'STAIRS_LONG'},
       'ホームセンター':{tier:3,type:'SHOP_LARGE'},
       '不思議なアイテム箱':{tier:3,type:'ITEM_BOX'},
+      'アンケート娘':{tier:3,type:'SURVEY_GIRL'},
       'ワープホール':{tier:4,type:'WARP'},
       '神々の競売場':{tier:4,type:'AUCTION'},
       'ダイヤモンドの採掘場':{tier:4,type:'DIAMOND_MINING'},
       '不老不死の湯':{tier:4,type:'HEALTH_3'},
+      'ATM':{tier:4,type:'ATM'},
       '究極のルーレット':{tier:5,type:'ULTIMATE_ROULETTE'},
-      '神の故郷':{tier:5,type:'GOD'}
+      '神の故郷':{tier:5,type:'GOD'},
+      '伝説の神器商店':{tier:5,type:'LEGEND_SHOP'}
     };
     const target=stageMap[stage.title];
     if(target) executeRoom(target.tier,target.type);
@@ -646,7 +677,7 @@ export default function InfiniteElevator(){
   const setupMining=(tier:number,gem:ItemId)=>{setRocks(Array.from({length:5},()=>{const ok=Math.random()<.60;const r=Math.random();const count=ok?(r<.55?1:r<.85?2:3):0;return {gem:ok?gem:null,count,open:false}}));setPicks(2);show({tier,title:gem==='ruby'?'ルビーの採掘場':gem==='emerald'?'エメラルドの採掘場':'ダイヤモンドの採掘場',desc:'5つの岩から2つ壊そう！宝石が出るかも！',result:'岩を選んで壊そう',kind:'mining'});};
   const setupShop=(tier:number,count:number)=>{const pool=[makeItem('mirror',ri(3,5)),makeItem('ring',ri(6,9)),makeItem('shop_ticket'),makeItem('sage_gem'),makeItem('party_set'),makeItem('money_tree',ri(1,2)),makeItem('blessing_charm',ri(1,2))].sort(()=>Math.random()-.5).slice(0,count).map(item=>({item,sold:false}));setShop(pool);show({tier,title:count===1?'小さなお店':count===3?'大きなお店':'ホームセンター',desc:'アイテムの購入が可能。※宝石のみ売却できます。',result:'ショップ営業中',kind:'shop'});};
 
-  const press=()=>{if(moving||gameover||s.turnsLeft<=0||s.inHell)return; playSfx('door',soundOn); setMoving(true);setDoors(false); let x={...s}; x.turnsLeft--; x.items.forEach(i=>{if(i.id==='money_tree')x.money+=200*(i.paramN||1); if(i.id==='blessing_charm')x.luck+=(i.paramN||1);}); if(x.ringBuff.active){x.ringBuff={...x.ringBuff,turns:x.ringBuff.turns-1}; if(x.ringBuff.turns<=0){x.luck-=x.ringBuff.amount;x.ringBuff={active:false,turns:0,amount:0};}}
+  const press=()=>{if(moving||gameover||s.turnsLeft<=0||s.inHell)return; playSfx('door',soundOn); setMoving(true);setDoors(false); let x={...s,items:[...s.items]}; const protectedByMag=x.items.some(i=>i.id==='immortal_mag'); if(!protectedByMag)x.turnsLeft--; x.items.forEach(i=>{if(i.id==='money_tree')x.money+=200*(i.paramN||1); if(i.id==='blessing_charm')x.luck+=(i.paramN||1); if(i.id==='kusanagi'){x.luck+=2;x.money+=400;}}); if(x.ringBuff.active){x.ringBuff={...x.ringBuff,turns:x.ringBuff.turns-1}; if(x.ringBuff.turns<=0){x.luck-=x.ringBuff.amount;x.ringBuff={active:false,turns:0,amount:0};}}
     let targetTier=1;
     if(x.partySet){const r=Math.random();targetTier=r<.72?2:r<.92?3:4;}
     else {const r=Math.random();targetTier=r<.65?1:r<.90?2:r<.98?3:4;}
@@ -655,7 +686,8 @@ export default function InfiniteElevator(){
     const luckMult=targetTier===1?ri(2,3):targetTier===2?ri(3,4):targetTier===3?ri(4,5):ri(5,7);
     const rawSteps=base+Math.max(0,x.luck)*luckMult;
     const mirrorMul=x.mirrorMultiplier;
-    const finalSteps=rawSteps*mirrorMul;
+    const yataMul=x.items.some(i=>i.id==='yata_mirror')?2:1;
+    const finalSteps=rawSteps*mirrorMul*yataMul;
     x.mirrorMultiplier=1;
     setS(x);
     fastTimeout(()=>{
@@ -663,15 +695,16 @@ export default function InfiniteElevator(){
       let currentTier=1; let ticks=0;
       const timer=fastInterval(()=>{ticks++;playSfx(currentTier>=3?'slotStop':'click',soundOn);setOverlay(o=>({...o,steps:ri(1,Math.max(12,Math.min(99,rawSteps))),detail:currentTier===1?'昇格するか…？':currentTier===2?'🚀 さらに上へ昇格抽選…！':currentTier===3?'⚡ OVERDRIVE昇格を抽選中…！':'🔥 神速モード確定へ…！'}));},85);
       const promote=(tier:number,msg:string)=>{currentTier=tier;playSfx((`move${Math.min(4,tier)}` as SfxName),soundOn);setOverlay(o=>({...o,tier,detail:msg}));};
-      if(targetTier>=2)fastTimeout(()=>promote(2,'昇格！ 🚀 BOOSTER'),420);
-      if(targetTier>=3)fastTimeout(()=>promote(3,'さらに昇格！ ⚡ LIMIT BREAK'),760);
-      if(targetTier>=4)fastTimeout(()=>{promote(4,'最上位昇格！ ✨ OVERDRIVE / 激熱 ✨');playSfx('jackpot',soundOn);},1080);
+      if(targetTier>=2)fastTimeout(()=>promote(2,'昇格！ 🚀 BOOSTER'),700);
+      if(targetTier>=3){fastTimeout(()=>setOverlay(o=>({...o,detail:'BOOSTER継続… まだ止まらない…！'})),1250);fastTimeout(()=>promote(3,'さらに昇格！ ⚡ LIMIT BREAK'),1750);}
+      if(targetTier>=4){fastTimeout(()=>setOverlay(o=>({...o,detail:'LIMIT BREAK継続… 最上位まで行くか…！？'})),2550);fastTimeout(()=>{promote(4,'最上位昇格！ ✨ OVERDRIVE / 激熱 ✨');playSfx('jackpot',soundOn);},3200);}
+      const revealDelay=targetTier===1?1380:targetTier===2?2100:targetTier===3?3000:4500;
       fastTimeout(()=>{
         window.clearInterval(timer);
         setOverlay({show:true,tier:targetTier,steps:rawSteps,detail:`素の上昇値：基礎${base} + 運気(${x.luck})×${luckMult}`,locked:true});
-        const finish=()=>{setOverlay({show:true,tier:targetTier,steps:finalSteps,detail:mirrorMul>1?`✨ 倍率適用完了！ ${rawSteps} × ${mirrorMul} = ${finalSteps}階 ✨`:`上昇階数 +${finalSteps} 確定！`,locked:true});playSfx(targetTier>=3?'jackpot':'arrive',soundOn);fastTimeout(()=>{setOverlay(o=>({...o,show:false}));setS(y=>({...y,floor:y.floor+finalSteps,logs:[`【ボタン】演出${targetTier}! +${finalSteps}階登った！`,...y.logs]}));fastTimeout(()=>{playSfx('arrive',soundOn);triggerRoom();setDoors(true);setMoving(false);},180);},900);};
+        const finish=()=>{const multDetail=[mirrorMul>1?`乱反射×${mirrorMul}`:'',yataMul>1?'八咫鏡×2':''].filter(Boolean).join(' ＋ ');setOverlay({show:true,tier:targetTier,steps:finalSteps,detail:multDetail?`✨ ${multDetail} 適用！ ${rawSteps} → ${finalSteps}階 ✨`:`上昇階数 +${finalSteps} 確定！`,locked:true});playSfx(targetTier>=3?'jackpot':'arrive',soundOn);fastTimeout(()=>{setOverlay(o=>({...o,show:false}));setS(y=>({...y,floor:y.floor+finalSteps,logs:[`【ボタン】演出${targetTier}! +${finalSteps}階登った！`,...y.logs]}));fastTimeout(()=>{playSfx('arrive',soundOn);triggerRoom();setDoors(true);setMoving(false);},180);},900);};
         if(mirrorMul>1){fastTimeout(()=>{playSfx('item',soundOn);setOverlay({show:true,tier:targetTier,steps:rawSteps,detail:`🪞 乱反射の鏡★${mirrorMul} 発動！ ${rawSteps}階を ×${mirrorMul} へ！`,locked:true});fastTimeout(finish,900);},650);}else{fastTimeout(finish,650);}
-      },1380);
+      },revealDelay);
     },420);
   };
 
@@ -703,7 +736,7 @@ export default function InfiniteElevator(){
     playSfx('success',soundOn);
   };
   const card=()=>Math.min(10,ri(1,10)); const hand=(a:number[])=>a.reduce((p,c)=>p+c,0);
-  const warp=(d:number)=>{playSfx(d>=0?'warpUp':'warpDown',soundOn);patch(current=>({floor:Math.max(1,current.floor+d)}));show({...room,kind:undefined,result:`${d>=0?'+':''}${d}階 ワープ！`,resultType:d>=0?'gold':'danger'});};
+  const warp=(min:number,max:number,label:string)=>{if(warpAnimating)return;setWarpAnimating(true);setWarpMessage(`${label}：空間座標を固定中…`);playSfx('roulette',soundOn);let tick=0;const timer=fastInterval(()=>{const fake=ri(min,max);setWarpMessage(`🌀 座標跳躍中… ${fake>=0?'+':''}${fake}階？`);playSfx(tick%3===0?'warpUp':'slotStop',soundOn);tick++;},110);fastTimeout(()=>{window.clearInterval(timer);setWarpMessage('⚡ 次元境界を突破！');playSfx('jackpot',soundOn);},1250);fastTimeout(()=>{const d=ri(min,max);playSfx(d>=0?'warpUp':'warpDown',soundOn);patch(current=>({floor:Math.max(1,current.floor+d)}));setWarpMessage(`${d>=0?'+':''}${d}階へワープ完了！`);setWarpAnimating(false);show({...room,kind:undefined,result:`${d>=0?'+':''}${d}階 ワープ！`,resultType:d>=0?'gold':'danger'});},1850);};
   const buyAuction=(item:Item)=>{if(s.money<500){playSfx('fail',soundOn);return;}playSfx('buy',soundOn);patch(current=>({money:current.money-500}));addItem(item);show({...room,kind:undefined,result:`${item.name} 落札！`,resultType:'gold'});};
 
   const interactive=useMemo(()=>{
@@ -769,14 +802,14 @@ export default function InfiniteElevator(){
         if(s.money<slotBet||slotSpinning){playSfx('fail',soundOn);return;}
         setCasinoSpinsLeft(v=>Math.max(0,v-1));
         const sy=['🔴','🟢','💎','🎡'];
-        // 指定された3つ揃い確率：ルビー10% / エメラルド7% / ダイヤ3% / ルーレット1%。
-        // 残り79%はハズレ。ハズレの一部だけ2リール同柄にしてリーチ演出を出す。
+        // 指定された3つ揃い確率：ルビー8% / エメラルド5% / ダイヤ2% / ルーレット1%。
+        // 残り84%はハズレ。ハズレの一部だけ2リール同柄にしてリーチ演出を出す。
         const roll=Math.random();
         let final:string[];
-        if(roll<.10) final=['🔴','🔴','🔴'];
-        else if(roll<.17) final=['🟢','🟢','🟢'];
-        else if(roll<.20) final=['💎','💎','💎'];
-        else if(roll<.21) final=['🎡','🎡','🎡'];
+        if(roll<.08) final=['🔴','🔴','🔴'];
+        else if(roll<.13) final=['🟢','🟢','🟢'];
+        else if(roll<.15) final=['💎','💎','💎'];
+        else if(roll<.16) final=['🎡','🎡','🎡'];
         else if(Math.random()<.38){
           const reachSymbol=pick(sy);
           final=[reachSymbol,reachSymbol,pick(sy.filter(v=>v!==reachSymbol))];
@@ -810,7 +843,7 @@ export default function InfiniteElevator(){
       <Box bg="blackAlpha.500" border="1px solid" borderColor="purple.500" rounded="xl" p={2.5}>
         <Text fontSize="11px" fontWeight="900" color="purple.200" mb={1.5} textAlign="center">🎰 配当表</Text>
         <Stack spacing={1}>
-          {[['🔴 🔴 🔴','ルビー揃い 10%','5倍','red.300'],['🟢 🟢 🟢','エメラルド揃い 7%','10倍','green.300'],['💎 💎 💎','ダイヤモンド揃い 3%','30倍','cyan.200'],['🎡 🎡 🎡','ルーレット揃い 1%','10〜50倍','yellow.200']].map(([icons,name,payout,color])=><Flex key={name as string} px={2} py={1} bg="whiteAlpha.100" rounded="md" align="center"><Text fontSize="11px" minW="82px">{icons}</Text><Text fontSize="9px" color="gray.200" flex="1">{name}</Text><Text fontSize="10px" fontWeight="900" color={color}>{payout}</Text></Flex>)}
+          {[['🔴 🔴 🔴','ルビー揃い 8%','5倍','red.300'],['🟢 🟢 🟢','エメラルド揃い 5%','10倍','green.300'],['💎 💎 💎','ダイヤモンド揃い 2%','30倍','cyan.200'],['🎡 🎡 🎡','ルーレット揃い 1%','10〜50倍','yellow.200']].map(([icons,name,payout,color])=><Flex key={name as string} px={2} py={1} bg="whiteAlpha.100" rounded="md" align="center"><Text fontSize="11px" minW="82px">{icons}</Text><Text fontSize="9px" color="gray.200" flex="1">{name}</Text><Text fontSize="10px" fontWeight="900" color={color}>{payout}</Text></Flex>)}
         </Stack>
       </Box>
     </Stack>;
@@ -823,7 +856,10 @@ export default function InfiniteElevator(){
       return <Stack spacing={1}>{upgradable.map((it,i)=>{const c=cap(it)!;return <Action key={i} title={`${it.name} を無料で強化`} sub={`上限 ★${c} / この部屋では1回だけ`} onClick={()=>{const before=it.paramN||1;const boost=ri(1,3);const after=Math.min(c,before+boost);playSfx('upgrade',soundOn);setS(x=>({...x,items:x.items.map(v=>v===it?makeItem(v.id,after):v)}));setForgeUsed(true);show({...room,result:`${it.name} → ★${after} に強化！${after===c?'（上限）':''}`,resultType:'success'});}}/>})}</Stack>;
     }
     if(kind==='mystery')return <Center w="100%" textAlign="center"><VStack w="100%" maxW="280px" spacing={2}><Text fontSize="xs" color="yellow.200">中身は5種類のうちどれか1つ</Text><Button mx="auto" display="block" w="220px" colorScheme="yellow" color="black" fontWeight="900" onClick={()=>{if(s.money<1000){playSfx('fail',soundOn);show({...room,result:'所持金が足りない…',resultType:'danger'});return;}playSfx('buy',soundOn);setS(x=>({...x,money:x.money-1000}));const reward=pick<Item>([makeItem('ruby',3),makeItem('emerald',3),makeItem('diamond',3),makeItem('mirror',ri(5,8)),makeItem('ring',ri(5,15))]);addItem(reward);playSfx(reward.type==='gem'?'gem':'item',soundOn);show({...room,kind:undefined,result:`落札商品：${reward.name}${reward.type==='gem'?' ×3':''} を獲得！`,resultType:'gold'});}}>商品を買う（1000円）</Button></VStack></Center>;
-    if(kind==='warp')return <Stack spacing={1}><Action title="小さなワープホール" sub="0 ～ +100階" onClick={()=>warp(ri(0,100))}/><Action title="大きなワープホール" sub="-30 ～ +200階" onClick={()=>warp(ri(-30,200))}/><Action title="巨大なワープホール" sub="-100 ～ +1000階" onClick={()=>warp(ri(-100,1000))}/></Stack>;
+    if(kind==='survey'){const sv=room.payload as {q:string;a:string;b:string;wa:number;wb:number;genre:string};const vote=(choice:'a'|'b')=>{const va=ri(0,sv.wa),vb=ri(0,sv.wb);const chosenVotes=choice==='a'?va:vb;const otherVotes=choice==='a'?vb:va;const pickedLabel=choice==='a'?sv.a:sv.b;if(va===vb){playSfx('click',soundOn);show({...room,kind:undefined,result:`結果：${sv.a} ${va}票 / ${sv.b} ${vb}票 ／ 引き分け！ 運気変化なし`,resultType:'neutral'});return;}const win=chosenVotes>otherVotes;const delta=win?ri(5,10):-ri(3,6);patch(current=>({luck:Math.max(0,current.luck+delta)}));playSfx(win?'success':'fail',soundOn);show({...room,kind:undefined,result:`${pickedLabel}を選択 → ${sv.a} ${va}票 / ${sv.b} ${vb}票 ／ ${win?'多数派！勝ち':'少数派…負け'} ／ 運気 ${delta>0?'+':''}${delta}`,resultType:win?'success':'danger'});};return <Stack spacing={2}><Box p={3} bg="pink.950" border="1px solid" borderColor="pink.500" rounded="xl"><Text fontSize="9px" color="pink.200" mb={1}>アンケート娘 / {sv.genre}</Text><Text fontSize="sm" color="white" fontWeight="900" textAlign="center">{sv.q}</Text><Text mt={2} fontSize="8px" color="pink.100" textAlign="center">現実の一般的傾向を参考にしたゲーム内重み：{sv.a} {sv.wa}% / {sv.b} {sv.wb}%</Text></Box><SimpleGrid columns={2} spacing={2}><Action title={sv.a} onClick={()=>vote('a')}/><Action title={sv.b} onClick={()=>vote('b')}/></SimpleGrid></Stack>;}
+    if(kind==='atm'){if(atmDeposit>0)return <Stack spacing={2}><Box p={3} bg="cyan.950" border="1px solid" borderColor="cyan.500" rounded="xl"><Text fontSize="10px" color="cyan.200">前回の預金</Text><Text fontSize="2xl" color="yellow.200" fontWeight="black" textAlign="center">{atmDeposit}円 → {atmDeposit*2}円</Text></Box><Button colorScheme="cyan" onClick={()=>{const pay=atmDeposit*2;patch(current=>({money:current.money+pay}));setAtmDeposit(0);playSfx('jackpot',soundOn);show({...room,kind:undefined,result:`ATM満期：${pay}円を受け取った！`,resultType:'gold'});}}>2倍になったお金を受け取る</Button></Stack>;const amount=Math.max(0,Math.floor(Number(atmInput)||0));return <Stack spacing={2}><Box p={3} bg="cyan.950" border="1px solid" borderColor="cyan.500" rounded="xl"><Text fontSize="10px" color="cyan.100">次にATMへ遭遇すると預けた金額が2倍になります。ゲーム終了で預金は消えます。</Text></Box><Input type="number" min={0} value={atmInput} onChange={e=>setAtmInput(e.target.value)} placeholder={`預ける金額（所持金 ${s.money}円）`} bg="blackAlpha.500"/><HStack><Button flex="1" variant="outline" colorScheme="cyan" onClick={()=>setAtmInput(String(s.money))}>全額</Button><Button flex="2" colorScheme="cyan" isDisabled={amount<=0||amount>s.money} onClick={()=>{patch(current=>({money:current.money-amount}));setAtmDeposit(amount);setAtmInput('');playSfx('coin',soundOn);show({...room,kind:undefined,result:`ATMに${amount}円を預けた。次回は${amount*2}円！`,resultType:'success'});}}>預ける</Button></HStack></Stack>;}
+    if(kind==='legendshop'){const goods=[makeItem('yata_mirror'),makeItem('kusanagi'),makeItem('immortal_mag')];return <Stack spacing={2}>{goods.map((it,i)=><Box key={it.id} p={2.5} bg="rgba(44,30,5,.72)" border="1px solid" borderColor="yellow.600" rounded="lg"><Flex align="start" gap={2}><Icon as={it.icon||FaStar} color="yellow.200" mt={1}/><Box flex="1"><Text fontSize="11px" color="yellow.100" fontWeight="900">{it.name} / {it.price}円</Text><Text mt={1} fontSize="9px" color="gray.200" lineHeight="1.55">{it.desc}</Text></Box></Flex><Button mt={2} w="100%" size="sm" colorScheme="yellow" color="black" isDisabled={legendShopUsed||s.money<it.price} onClick={()=>{if(legendShopUsed||s.money<it.price){playSfx('fail',soundOn);return;}patch(current=>({money:current.money-it.price}));addItem(it);setLegendShopUsed(true);playSfx('jackpot',soundOn);show({...room,result:`${it.name} を購入！ この訪問での購入は完了。`,resultType:'gold'});}}>購入する</Button></Box>)}</Stack>;}
+    if(kind==='warp')return <Stack spacing={2}><Center position="relative" h="96px" overflow="hidden"><Box position="absolute" w="86px" h="86px" rounded="full" bg="conic-gradient(#22d3ee,#8b5cf6,#2563eb,#22d3ee)" opacity={warpAnimating ? .9 : .35} animation={warpAnimating?'warpSpin .45s linear infinite':'none'} boxShadow={warpAnimating?'0 0 34px rgba(34,211,238,.75)':'0 0 16px rgba(34,211,238,.25)'}/><Box position="absolute" w="58px" h="58px" rounded="full" bg="#05060a"/><Text zIndex={2} fontSize="10px" color="cyan.100" fontWeight="900" textAlign="center">{warpMessage||'ワープ先を選択'}</Text></Center><Action title="小さなワープホール" sub="0 ～ +100階" onClick={()=>warp(0,100,'小さなワープホール')}/><Action title="大きなワープホール" sub="-30 ～ +200階" onClick={()=>warp(-30,200,'大きなワープホール')}/><Action title="巨大なワープホール" sub="-300 ～ +800階" onClick={()=>warp(-300,800,'巨大なワープホール')}/></Stack>;
     if(kind==='auction')return <Stack spacing={1}><Action title="乱反射の鏡★8 / 500円" onClick={()=>buyAuction(makeItem('mirror',8))}/><Action title="幸運の指輪★15 / 500円" onClick={()=>buyAuction(makeItem('ring',15))}/></Stack>;
     if(kind==='ultimate')return <Stack spacing={2}>
       <Box p={2.5} bg="rgba(15,10,2,.72)" border="1px solid" borderColor="yellow.500" rounded="xl">
@@ -841,7 +877,7 @@ export default function InfiniteElevator(){
       </Center>
       <Button w="100%" colorScheme="yellow" color="black" h="48px" isDisabled={ultimateSpinning} isLoading={ultimateSpinning} loadingText="神々の運命が回転中…" onClick={()=>{if(ultimateSpinning)return;setUltimateSpinning(true);setUltimateMessage('運命の輪が加速している…');playSfx('roulette',soundOn);const labels=['✨ 階数 1.5倍！','💰 お金 +10,000円！','⚡ 回数+5 ＆ 運気+10！','💀 地獄の門'];let idx=0;const timer=fastInterval(()=>{setUltimateMessage(labels[idx%labels.length]);playSfx(idx%3===0?'jackpot':'slotStop',soundOn);idx++;},95);fastTimeout(()=>{setUltimateMessage('⚡ 最終判定 ⚡');playSfx('jackpot',soundOn);},1750);fastTimeout(()=>{window.clearInterval(timer);const r=ri(0,3);const chosen=labels[r];setUltimateMessage(chosen);setUltimateSpinning(false);if(r===0)patch(current=>({floor:Math.floor(current.floor*1.5)}));if(r===1)patch(current=>({money:current.money+10000}));if(r===2)patch(current=>({turnsLeft:current.turnsLeft+5,luck:current.luck+10}));if(r===3){playSfx('hell',soundOn);patch({inHell:true});setHellDie(null);setHellRolling(false);setHellMessage('「5」が出れば生還。1回振るごとに残り回数を1消費する。');show({tier:5,title:'地獄の門',desc:'ここは脱出判定専用フロア。サイコロで「5」を出した瞬間だけ地上へ戻れる。失敗しても挑戦は続くが、振るたびに残り回数を1消費する。',result:'脱出条件：5を出せ / 成功率 1/6',resultType:'danger',kind:'hell'});return;}playSfx('jackpot',soundOn);show({...room,kind:undefined,result:`究極ルーレット結果：${chosen}`,resultType:'gold'});},2850);}}>運命のルーレットを回す！</Button>
     </Stack>;
-    if(kind==='god')return <Stack spacing={1}>{[makeItem('mirror',8),makeItem('ring',15),makeItem('money_tree',3),makeItem('blessing_charm',3),makeItem('party_set')].map((it,i)=><Action key={i} title={it.name} onClick={()=>{playSfx('item',soundOn);addItem(it);show({...room,kind:undefined,result:`${it.name} 獲得！`,resultType:'gold'})}}/>)}</Stack>;
+    if(kind==='god')return <Stack spacing={1}>{[makeItem('mirror',8),makeItem('ring',15),makeItem('money_tree',3),makeItem('blessing_charm',3)].map((it,i)=><Action key={i} title={it.name} onClick={()=>{playSfx('item',soundOn);addItem(it);show({...room,kind:undefined,result:`${it.name} 獲得！`,resultType:'gold'})}}/>)}</Stack>;
     if(kind==='hell')return <Stack spacing={2}>
       <Box p={3} bg="red.950" border="1px solid" borderColor="red.700" rounded="xl"><Text fontSize="11px" color="red.100" fontWeight="800">💀 脱出ルール</Text><Text mt={1} fontSize="10px" color="red.200">サイコロで「5」が出れば即生還。5以外は失敗。振るたびに残り回数 -1。</Text><HStack mt={2} justify="center"><Badge colorScheme="red">成功率 1 / 6</Badge><Badge colorScheme="orange">残り {s.turnsLeft} 回</Badge></HStack></Box>
       <Center position="relative" h="118px" bg="radial-gradient(circle,rgba(127,29,29,.62),rgba(0,0,0,.78) 72%)" border="2px solid" borderColor={hellRolling?'red.200':'red.800'} rounded="2xl" boxShadow={hellRolling?'0 0 38px rgba(248,113,113,.85), inset 0 0 32px rgba(127,29,29,.65)':'inset 0 0 20px rgba(0,0,0,.6)'} overflow="hidden" animation={hellRolling?'hellShake .14s linear infinite':'none'}>
@@ -854,7 +890,7 @@ export default function InfiniteElevator(){
     </Stack>;
     return null;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[room,s,rocks,picks,shop,bj,slotBet,slot,slotSpinning,slotWin,slotMessage,casinoSpinsLeft,soundOn,doorChoices,gameSpeed,forgeUsed,fortuneReading,boxRewards,boxSelected,boxRevealAll,itemBoxOpening,ultimateSpinning,ultimateMessage,bjPhase,eventAnimating]);
+  },[room,s,rocks,picks,shop,bj,slotBet,slot,slotSpinning,slotWin,slotMessage,casinoSpinsLeft,soundOn,doorChoices,gameSpeed,forgeUsed,fortuneReading,boxRewards,boxSelected,boxRevealAll,itemBoxOpening,ultimateSpinning,ultimateMessage,bjPhase,eventAnimating,atmDeposit,atmInput,legendShopUsed,warpAnimating,warpMessage]);
 
   const roomIdentity=useMemo(()=>{
     const k=room.kind||''; const t=room.title;
@@ -873,6 +909,9 @@ export default function InfiniteElevator(){
     if(k==='ultimate')return {icon:FaStar,color:'yellow.200',glow:'rgba(250,204,21,.55)'};
     if(k==='god'||k==='altar')return {icon:FaSun,color:'yellow.100',glow:'rgba(253,224,71,.45)'};
     if(k==='warp')return {icon:FaWandMagicSparkles,color:'cyan.200',glow:'rgba(34,211,238,.45)'};
+    if(k==='atm')return {icon:FaCoins,color:'cyan.200',glow:'rgba(34,211,238,.42)'};
+    if(k==='survey')return {icon:FaHeart,color:'pink.200',glow:'rgba(244,114,182,.42)'};
+    if(k==='legendshop')return {icon:FaSun,color:'yellow.100',glow:'rgba(250,204,21,.55)'};
     if(k==='doors')return {icon:FaDoorClosed,color:'orange.200',glow:'rgba(251,146,60,.35)'};
     if(t.includes('階段'))return {icon:FaArrowUp,color:'blue.200',glow:'rgba(96,165,250,.35)'};
     if(t.includes('何も無い'))return {icon:FaDoorClosed,color:'gray.300',glow:'rgba(148,163,184,.22)'};
@@ -895,6 +934,9 @@ export default function InfiniteElevator(){
     if(k==='fortune')return {bg:'radial-gradient(circle at 50% 30%,rgba(192,132,252,.26),transparent 35%),radial-gradient(circle at 15% 15%,rgba(255,255,255,.10),transparent 2%),linear-gradient(180deg,#24103c,#080710 75%)',accent:'rgba(192,132,252,.18)',label:'FORTUNE ROOM'};
     if(k==='altar')return {bg:'radial-gradient(circle at 50% 30%,rgba(253,224,71,.20),transparent 38%),linear-gradient(180deg,#2d2510,#0b0a06 72%)',accent:'rgba(253,224,71,.14)',label:'ALTAR'};
     if(k==='warp')return {bg:'radial-gradient(circle at center,rgba(34,211,238,.30),rgba(168,85,247,.15) 32%,transparent 55%),linear-gradient(180deg,#071b2a,#0a0714 75%)',accent:'rgba(34,211,238,.18)',label:'WARP FIELD'};
+    if(k==='atm')return {bg:'radial-gradient(circle at 50% 45%,rgba(34,211,238,.28),transparent 42%),linear-gradient(180deg,#0b2531,#071014 75%)',accent:'rgba(34,211,238,.20)',label:'ATM VAULT'};
+    if(k==='survey')return {bg:'radial-gradient(circle at 50% 42%,rgba(244,114,182,.25),transparent 42%),linear-gradient(180deg,#32172a,#0d0810 75%)',accent:'rgba(244,114,182,.18)',label:'SURVEY ROOM'};
+    if(k==='legendshop')return {bg:'radial-gradient(circle at 50% 20%,rgba(250,204,21,.36),transparent 42%),linear-gradient(180deg,#4b320b,#120b04 75%)',accent:'rgba(250,204,21,.22)',label:'DIVINE RELIC SHOP'};
     if(k==='shop')return {bg:'radial-gradient(circle at 50% 10%,rgba(250,204,21,.16),transparent 32%),linear-gradient(180deg,#252010,#0d0c08 75%)',accent:'rgba(250,204,21,.10)',label:'SHOP FLOOR'};
     if(k==='forge')return {bg:'radial-gradient(circle at 50% 60%,rgba(251,146,60,.28),transparent 38%),linear-gradient(180deg,#26130a,#0d0805 75%)',accent:'rgba(251,146,60,.16)',label:'ARCANE FORGE'};
     if(t.includes('湯'))return {bg:'radial-gradient(circle at 50% 70%,rgba(103,232,249,.22),transparent 42%),linear-gradient(180deg,#10252d,#081014 75%)',accent:'rgba(103,232,249,.12)',label:'HEALING SPA'};
@@ -911,7 +953,7 @@ export default function InfiniteElevator(){
 
   const handleButtonSound=(e:React.MouseEvent)=>{if(menu&&soundOn)playMenuMusic();const el=e.target as HTMLElement;if(el.closest('button'))playSfx('click',soundOn);};
 
-  return <><style>{`@keyframes cathedralFlicker{0%,100%{opacity:.3}50%{opacity:.62}}@keyframes steelSweep{0%{transform:translateX(-160%)}100%{transform:translateX(160%)}}@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-7deg)}to{transform:scale(1.10) rotate(7deg)}}@keyframes hellShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}@keyframes hellRing{0%{transform:scale(.55) rotate(0deg);opacity:.9}100%{transform:scale(1.55) rotate(220deg);opacity:0}}@keyframes revealPulse{from{transform:scale(.96);filter:brightness(.95)}to{transform:scale(1.06);filter:brightness(1.35)}}@keyframes ultimateWheel{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes ultimateFlash{0%,100%{opacity:.45;filter:brightness(1)}50%{opacity:1;filter:brightness(1.8)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{0%{opacity:0;transform:scale(.72)}45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.24)}}@keyframes rareRing{0%{opacity:0;transform:scale(.35)}35%{opacity:.95}100%{opacity:0;transform:scale(1.65)}}@keyframes rareSpark{0%{opacity:0;transform:translateY(18px) scale(.6)}35%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.15)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
+  return <><style>{`@keyframes cathedralFlicker{0%,100%{opacity:.3}50%{opacity:.62}}@keyframes steelSweep{0%{transform:translateX(-160%)}100%{transform:translateX(160%)}}@keyframes elevatorAura{from{transform:scale(.9);opacity:.45}to{transform:scale(1.08);opacity:1}}@keyframes hypeBlink{0%,45%{opacity:1}46%,100%{opacity:.35}}@keyframes hellPulse{from{transform:scale(.9) rotate(-7deg)}to{transform:scale(1.10) rotate(7deg)}}@keyframes hellShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}@keyframes hellRing{0%{transform:scale(.55) rotate(0deg);opacity:.9}100%{transform:scale(1.55) rotate(220deg);opacity:0}}@keyframes revealPulse{from{transform:scale(.96);filter:brightness(.95)}to{transform:scale(1.06);filter:brightness(1.35)}}@keyframes ultimateWheel{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes warpSpin{0%{transform:rotate(0deg) scale(.85);filter:brightness(1)}50%{transform:rotate(180deg) scale(1.08);filter:brightness(1.8)}100%{transform:rotate(360deg) scale(.85);filter:brightness(1)}}@keyframes ultimateFlash{0%,100%{opacity:.45;filter:brightness(1)}50%{opacity:1;filter:brightness(1.8)}}@keyframes slotJackpot{from{transform:scale(.96);filter:brightness(.9)}to{transform:scale(1.04);filter:brightness(1.35)}}@keyframes reachPulse{from{transform:scale(.98);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.45)}}@keyframes rareArrival{0%{opacity:0;transform:scale(.72)}45%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.24)}}@keyframes rareRing{0%{opacity:0;transform:scale(.35)}35%{opacity:.95}100%{opacity:0;transform:scale(1.65)}}@keyframes rareSpark{0%{opacity:0;transform:translateY(18px) scale(.6)}35%{opacity:1}100%{opacity:0;transform:translateY(-44px) scale(1.15)}}`}</style><Center h="100dvh" minH={0} p={{base:0,md:4}} overflow="hidden">
     <Box onClickCapture={handleButtonSound} w="100%" maxW="432px" h={{base:'100dvh',md:'min(860px, calc(100dvh - 32px))'}} maxH={{base:'100dvh',md:'calc(100dvh - 32px)'}} bg="#06080a" borderRadius={{base:0,md:'10px'}} overflow="hidden" position="relative" borderWidth={{base:0,md:'1px'}} borderColor="rgba(198,202,204,.30)" boxShadow="0 26px 80px rgba(0,0,0,.78), inset 0 0 70px rgba(255,255,255,.018)">
       <audio ref={menuAudioRef} src={menuMusicSrc} preload="auto" loop/>
       {menu&&<Flex position="absolute" inset={0} zIndex={40} bgImage={`linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.12) 32%,rgba(2,3,4,.58) 58%,rgba(2,3,4,.92) 76%,#020304 100%), url("${menuVisualSrc}")`} bgSize="cover" bgRepeat="no-repeat" bgPosition="center center" bgColor="#020304" direction="column" overflow="hidden">
