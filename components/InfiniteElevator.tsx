@@ -1010,15 +1010,20 @@ export default function InfiniteElevator(){
               <HStack spacing={1} flex="1" minW={0}>{[[FaBolt,'残り',s.turnsLeft,'yellow.300','turns'],[FaStar,'運気',s.luck,'green.300','luck'],[FaCoins,'所持金',s.money,'yellow.200','money']].map(([ic,l,v,c,key]:any)=><Button key={l} flex="1" minW={0} h="auto" px={{base:1,md:2}} py={1} justifyContent="flex-start" bg="rgba(0,0,0,.34)" border="1px solid rgba(255,255,255,.06)" borderRadius="6px" _hover={{bg:'rgba(255,255,255,.10)',borderColor:'rgba(255,255,255,.18)'}} _active={{transform:'translateY(1px)'}} onClick={()=>setStatusDetail(key)}><HStack spacing={1} minW={0}><Icon as={ic} color={c} boxSize={3}/><Box minW={0} textAlign="left"><Text fontSize="7px" color="gray.400">{l}</Text><Text fontSize={{base:'9px',md:'11px'}} fontFamily="mono" fontWeight="900" color={c} noOfLines={1}>{v}{l==='所持金'?'円':''}</Text></Box></HStack></Button>)}</HStack>
               <HStack spacing={1} flexShrink={0}><Button size="xs" minW="38px" h="28px" px={1.5} bg={gameSpeed===2?'#521920':'rgba(255,255,255,.07)'} color="white" border="1px solid rgba(200,200,200,.18)" onClick={()=>setGameSpeed(v=>v===1?2:1)}>×{gameSpeed}</Button><IconButton aria-label="bgm" size="xs" h="28px" minW="28px" variant="ghost" color={soundOn?'#ddd7cb':'gray.500'} icon={soundOn?<FaVolumeHigh/>:<FaVolumeXmark/>} onClick={()=>setSoundOn(v=>!v)}/></HStack>
             </HStack>
-            <HStack spacing={1.5} align="center" pl={{base:0,md:'118px'}}>
+            <HStack spacing={1.5} align="center" justify="flex-start" w="100%">
               <Button h="28px" size="xs" variant="outline" borderColor="whiteAlpha.300" bg="rgba(0,0,0,.36)" onClick={inventoryPanel.onOpen}>アイテム {s.items.length}/3</Button>
               <Button h="28px" size="xs" variant="outline" borderColor="whiteAlpha.300" bg="rgba(0,0,0,.36)" onClick={logPanel.onOpen}>ログ</Button>
               {(s.ringBuff.active||s.mirrorMultiplier>1||s.partySet)&&<HStack spacing={1} flexWrap="wrap">{s.ringBuff.active&&<Badge fontSize="7px" colorScheme="green">指輪+{s.ringBuff.amount}</Badge>}{s.mirrorMultiplier>1&&<Badge fontSize="7px" colorScheme="cyan">鏡×{s.mirrorMultiplier}</Badge>}{s.partySet&&<Badge fontSize="7px" colorScheme="pink">演出UP</Badge>}</HStack>}
             </HStack>
+            <Box w="100%" overflowX="auto" overflowY="hidden" sx={{WebkitOverflowScrolling:'touch'}}>
+              <HStack spacing={1.5} justify="flex-start" minW="max-content" pb={.5}>
+                {s.items.length===0?<Text fontSize="8px" color="gray.500" px={1}>所持アイテムなし</Text>:s.items.map((it,i)=>{const pal=itemPalette(it);return <Button key={`${it.id}-${i}`} h="32px" minW="auto" px={2} flexShrink={0} justifyContent="flex-start" bg={pal.bg} color={pal.text} border="1px solid" borderColor={pal.border} borderRadius="6px" _hover={{filter:'brightness(1.12)'}} onClick={()=>setSelected(i)}><HStack spacing={1.5}><Icon as={it.icon||FaGift} boxSize={3} color={pal.icon}/><Text fontSize="8px" fontWeight="900" whiteSpace="nowrap">{it.name}{it.type==='gem'?` ×${it.count||1}`:''}</Text></HStack></Button>})}
+              </HStack>
+            </Box>
           </VStack>
         </Box>
 
-        <Flex flex="1" minH={0} position="relative" px={{base:2,md:4,lg:6}} pt={{base:'112px',md:'112px',lg:'118px'}} pb={roomIntro?{base:'8px',md:'12px',lg:'14px'}:{base:'82px',md:'92px',lg:'98px'}} align="center" justify="center" overflow="hidden" boxSizing="border-box">
+        <Flex flex="1" minH={0} position="relative" px={{base:2,md:4,lg:6}} pt={{base:'150px',md:'154px',lg:'158px'}} pb={roomIntro?{base:'8px',md:'12px',lg:'14px'}:{base:'82px',md:'92px',lg:'98px'}} align="center" justify="center" overflow="hidden" boxSizing="border-box">
           {roomAtmosphere.label&&<Text position="absolute" top="10px" right="12px" fontSize="8px" letterSpacing=".22em" fontWeight="900" color="whiteAlpha.300">{roomAtmosphere.label}</Text>}{rareArrival>0&&<Box position="absolute" inset={0} zIndex={16} pointerEvents="none" overflow="hidden">
             <Box position="absolute" inset="-18%" bg={rareArrival===5?'radial-gradient(circle,rgba(253,224,71,.48) 0%,rgba(250,204,21,.18) 28%,transparent 62%)':'radial-gradient(circle,rgba(244,63,94,.34) 0%,rgba(168,85,247,.14) 35%,transparent 65%)'} animation="rareArrival .9s ease-out both"/>
             <Center position="absolute" inset={0}>
